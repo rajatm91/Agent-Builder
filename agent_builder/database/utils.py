@@ -172,16 +172,16 @@ def init_db_samples(dbmanager: Any):
         user_id="guestuser@gmail.com",
         api_type="open_ai",
     )
-    azure_model = Model(
-        model="gpt4-turbo",
-        description="Azure OpenAI  model",
-        user_id="guestuser@gmail.com",
-        api_type="azure",
-        base_url="https://api.your azureendpoint.com/v1",
-    )
+    # azure_model = Model(
+    #     model="gpt4-turbo",
+    #     description="Azure OpenAI  model",
+    #     user_id="guestuser@gmail.com",
+    #     api_type="azure",
+    #     base_url="https://api.your azureendpoint.com/v1",
+    # )
     zephyr_model = Model(
-        model="zephyr",
-        description="Local Huggingface Zephyr model via vLLM, LMStudio or Ollama",
+        model="llama-3b",
+        description="Local Llama model via  Ollama",
         base_url="http://localhost:1234/v1",
         user_id="guestuser@gmail.com",
         api_type="open_ai",
