@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "agent-builder"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+ag2 = "^0.7.3"
+autogen = {extras = ["retrievechat-pgvector"], version = "^0.7.3"}
+sentence-transformers = "^3.4.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
