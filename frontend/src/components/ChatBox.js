@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { TextField, Button, Box, Typography, Paper } from "@mui/material";
+import React, { useState, useEffect, useRef } from "react";
+import { TextField, Button, Box, Typography, IconButton } from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import AgentDetailsModal from "./AgentDetailsModal";
+import { Send, Mic, AttachFile } from "@mui/icons-material";
+import ReviewDetails from "./ReviewDetails";
 
 const ChatBox = ({ onCreateAgent }) => {
   const [message, setMessage] = useState("");
@@ -14,6 +16,12 @@ const ChatBox = ({ onCreateAgent }) => {
     documentPath: ""
   });
   const [reviewDetails, setReviewDetails] = useState(null);
+
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSend = async () => {
     if (message.trim()) {
@@ -52,15 +60,15 @@ const ChatBox = ({ onCreateAgent }) => {
           department: !objectAgent.department
         };
 
-        // setMissingDetails(missDetails);
-
         const missingField = Object.keys(missDetails).find(
           (key) => missDetails[key]
         );
 
         if (missingField) {
-          let message = `Please provide ${missingField}.`;
-          setMessages((prev) => [...prev, { text: message, isUser: false }]);
+          setMessages((prev) => [
+            ...prev,
+            { text: `Please provide ${missingField}.`, isUser: false }
+          ]);
         } else {
           setMessages((prev) => [
             ...prev,
@@ -106,93 +114,91 @@ const ChatBox = ({ onCreateAgent }) => {
     setModalOpen(false);
   };
 
-  useEffect(() => {
-    if (reviewDetails) {
-      console.log("Review details updated:", reviewDetails);
-    }
-  }, [reviewDetails]);
-
   return (
     <Box
       sx={{
         display: "flex",
-        flexDirection: "row",
-        height: "100%",
+        flexDirection: "column",
+        justifyContent: "flex-end",
         width: "100%",
-        maxWidth: "100vw"
+        maxWidth: "100vw",
+        padding: 2,
+        backgroundColor: "#f4f7fa"
       }}
     >
-      {/* Chat box */}
+      {/* Chat Container */}
       <Box
         sx={{
           display: "flex",
           flexDirection: "column",
-          width: "70%", // Chat occupies 70% of screen width
-          maxWidth: "70%",
-          overflowY: "auto",
-          backgroundColor: "#f4f7fa",
+          // width: "70%",
+          // maxWidth: "70%",
+          backgroundColor: "#ffffff",
           boxShadow: 3,
           borderRadius: 2,
-          p: 2
+          p: 2,
+          height: "80vh",
+          overflow: "hidden"
         }}
       >
-        {messages.length === 0 ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%"
-            }}
-          >
-            <Typography variant="h6" color="textSecondary">
-              Start chatting by typing a message...
-            </Typography>
-          </Box>
-        ) : (
-          messages.map((msg, index) => (
-            <MessageBubble key={index} message={msg.text} isUser={msg.isUser} />
-          ))
-        )}
-
-        {reviewDetails && (
-          <Paper
-            elevation={3}
-            sx={{
-              p: 2,
-              mt: 2,
-              borderRadius: 2,
-              background: "linear-gradient(135deg, #f5f7fa, #c3cfe2)"
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Review Details
-            </Typography>
-            <Typography>Name: {reviewDetails.name}</Typography>
-            <Typography>Role: {reviewDetails.role}</Typography>
-            <Typography>Skills: {reviewDetails.skills}</Typography>
-            <Typography>Document Path: {reviewDetails.documentPath}</Typography>
-            <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-              <Button variant="contained" onClick={() => setModalOpen(true)}>
-                Edit
-              </Button>
-              <Button variant="contained" onClick={handleCreateAgent}>
-                Submit
-              </Button>
-              <Button variant="outlined" onClick={handleCancel}>
-                Cancel
-              </Button>
+        {/* Messages Scrollable Area */}
+        <Box
+          sx={{
+            flexGrow: 1,
+            overflowY: "auto",
+            paddingRight: 1,
+            maxHeight: "calc(100% - 80px)"
+          }}
+        >
+          {messages.length === 0 ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100%"
+              }}
+            >
+              <Typography variant="h6" color="textSecondary">
+                Start chatting by typing a message...
+              </Typography>
             </Box>
-          </Paper>
-        )}
-        {/* Chat Input at the bottom */}
+          ) : (
+            messages.map((msg, index) => (
+              <MessageBubble
+                key={index}
+                message={msg.text}
+                isUser={msg.isUser}
+              />
+            ))
+          )}
+          <div ref={messagesEndRef} />
+          {reviewDetails && (
+            <ReviewDetails
+              reviewDetails={reviewDetails}
+              setModalOpen={setModalOpen}
+              handleCreateAgent={handleCreateAgent}
+              handleCancel={handleCancel}
+            />
+          )}
+        </Box>
+
+        {/* Chat Input Fixed at Bottom */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            p: 2        
+            p: 2,
+            borderTop: "1px solid #ddd",
+            backgroundColor: "#ffffff"
           }}
         >
+          <IconButton color="primary">
+            <Mic />
+          </IconButton>
+          <IconButton color="primary">
+            <AttachFile />
+          </IconButton>
           <TextField
             fullWidth
             variant="outlined"
@@ -205,14 +211,16 @@ const ChatBox = ({ onCreateAgent }) => {
             variant="contained"
             color="primary"
             onClick={handleSend}
-            sx={{ ml: 2 }}
             // startIcon={<Chat />}
+            startIcon={<Send />}
+            sx={{ ml: 2 }}
           >
             Send
           </Button>
         </Box>
       </Box>
 
+      {/* Agent Details Modal */}
       <AgentDetailsModal
         open={modalOpen}
         onClose={handleCancel}

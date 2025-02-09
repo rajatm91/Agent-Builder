@@ -88,7 +88,6 @@ def on_connect(iostream: IOWebsockets) -> None:
         f" - on_connect(): Initiating chat with agent {agent_creator} using message '{initial_msg}"
     )
 
-
     initial_msg = initial_msg
 
     user_proxy.initiate_chat(agent_creator,

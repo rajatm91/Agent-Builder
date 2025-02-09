@@ -12,24 +12,24 @@ def create_retriever_agent(agent_name: str,
 
     embedding_model = "BAAI/bge-large-en-v1.5"
     embedding_function = SentenceTransformer(embedding_model).encode
-    rag_proxy_agent = RetrieveUserProxyAgent(
-        name=agent_name,
-        human_input_mode="NEVER",
-        max_consecutive_auto_reply=1,
-        retrieve_config={
-            "task": "qa",
-            "docs_path" : docs_path,
-            "vector_db": "pgvector",
-            "collection_name": f"{agent_name}_collection",
-            "db_config": {
-                "connection_string": os.environ["DATABASE_CONN"]
-            },
-            "embedding_function": embedding_function,
-            "chunk_token_size": 512,
-            "model": model_name
-        },
-        code_execution_config=False
-    )
+    # rag_proxy_agent = RetrieveUserProxyAgent(
+    #     name=agent_name,
+    #     human_input_mode="NEVER",
+    #     max_consecutive_auto_reply=1,
+    #     retrieve_config={
+    #         "task": "qa",
+    #         "docs_path" : docs_path,
+    #         "vector_db": "pgvector",
+    #         "collection_name": f"{agent_name}_collection",
+    #         "db_config": {
+    #             "connection_string": os.environ["DATABASE_CONN"]
+    #         },
+    #         "embedding_function": embedding_function,
+    #         "chunk_token_size": 512,
+    #         "model": model_name
+    #     },
+    #     code_execution_config=False
+    # )
 
     return { "name": agent_name,
              "max_consecutive_auto_reply": 1,

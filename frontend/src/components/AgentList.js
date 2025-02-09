@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { List, ListItem, ListItemText, Dialog, DialogActions, DialogContent, Button, Typography } from '@mui/material';
+import { List, ListItem, ListItemText, Dialog, DialogActions, DialogContent, Button, Typography, Icon } from '@mui/material';
+import { Person, Work, EmojiObjects, Description } from '@mui/icons-material'; // Add relevant icons
 import ChatBox from './ChatBox'; 
 
 const AgentList = ({ agents }) => {
@@ -16,6 +17,9 @@ const AgentList = ({ agents }) => {
       <List>
         {agents?.map((agent, index) => (
           <ListItem button key={index} onClick={() => handleAgentClick(agent)}>
+            <Icon sx={{ mr: 2 }}>
+              <Person />
+            </Icon>
             <ListItemText primary={agent.name} secondary={agent.role} />
           </ListItem>
         ))}
@@ -26,11 +30,21 @@ const AgentList = ({ agents }) => {
         <DialogContent>
           {selectedAgent ? (
             <>
-              <Typography variant="h6">Agent Details</Typography>
-              <Typography variant="body1"><strong>Name:</strong> {selectedAgent.name}</Typography>
-              <Typography variant="body1"><strong>Role:</strong> {selectedAgent.role}</Typography>
-              <Typography variant="body1"><strong>Skills:</strong> {selectedAgent.skills || 'N/A'}</Typography>
-              <Typography variant="body1"><strong>Document Path:</strong> {selectedAgent.documentPath || 'N/A'}</Typography>
+              <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
+                <EmojiObjects sx={{ mr: 1 }} />Agent Details
+              </Typography>
+              <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
+                <Person sx={{ mr: 1 }} /> <strong>Name:</strong> {selectedAgent.name}
+              </Typography>
+              <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
+                <Work sx={{ mr: 1 }} /> <strong>Role:</strong> {selectedAgent.role}
+              </Typography>
+              <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
+                <EmojiObjects sx={{ mr: 1 }} /> <strong>Skills:</strong> {selectedAgent.skills || 'N/A'}
+              </Typography>
+              <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
+                <Description sx={{ mr: 1 }} /> <strong>Document Path:</strong> {selectedAgent.documentPath || 'N/A'}
+              </Typography>
             </>
           ) : (
             <Typography variant="body1">No agent selected.</Typography>

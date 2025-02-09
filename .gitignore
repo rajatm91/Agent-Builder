@@ -69,3 +69,5 @@ Thumbs.db
 
 # pyenv
 .python-version
+
+myenv

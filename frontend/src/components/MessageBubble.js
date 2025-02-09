@@ -1,29 +1,38 @@
-import React from 'react';
-import { Paper, Typography } from '@mui/material';
+import React from "react";
+import { Box, Typography } from "@mui/material";
+import PersonIcon from "@mui/icons-material/Person"; // User icon
+import SmartToyIcon from "@mui/icons-material/SmartToy"; // Bot icon
 
 const MessageBubble = ({ message, isUser }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: isUser ? 'flex-end' : 'flex-start',
-        margin: '8px 0',
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: isUser ? "flex-end" : "flex-start",
+        my: 1
       }}
     >
-      <Paper
-        elevation={3}
-        style={{
-          padding: '10px 16px',
-          backgroundColor: isUser ? '#1976d2' : '#f5f5f5',
-          color: isUser ? '#fff' : '#000',
-          maxWidth: '70%',
-          borderRadius: isUser ? '15px 15px 0 15px' : '15px 15px 15px 0',
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+      {/* Bot Icon (left) */}
+      {!isUser && <SmartToyIcon sx={{ mr: 1, color: "blue" }} />}
+
+      {/* Message Bubble */}
+      <Typography
+        sx={{
+          padding: "8px 12px",
+          borderRadius: "8px",
+          backgroundColor: isUser ? "#DCF8C6" : "#E3E3E3",
+          color: "#000",
+          maxWidth: "60%",
+          display: "inline-block"
         }}
       >
-        <Typography variant="body1">{message}</Typography>
-      </Paper>
-    </div>
+        {message}
+      </Typography>
+
+      {/* User Icon (right) */}
+      {isUser && <PersonIcon sx={{ ml: 1, color: "green" }} />}
+    </Box>
   );
 };
 
