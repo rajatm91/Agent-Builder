@@ -19,8 +19,8 @@ from agent_builder.utils import init_app_folders, check_and_cast_datetime_fields
 from loguru import logger
 
 
-from .chatmanager import ChatManager
-from .datamodel import Response, Skill, Model, Message, Session, Workflow, Agent
+from agent_builder.chatmanager import ChatManager
+from agent_builder.datamodel import Response, Skill, Model, Message, Session, Workflow, Agent
 
 managers = {"chat": None}
 
@@ -63,6 +63,7 @@ folders = init_app_folders(app_file_path)
 ui_folder_path = Path(__file__).resolve().parent / "ui"
 
 database_engine_uri = folders["database_engine_uri"]
+print(database_engine_uri)
 dbmanager = DBManager(engine_uri=database_engine_uri)
 
 

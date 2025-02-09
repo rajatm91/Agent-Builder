@@ -12,6 +12,7 @@ from autogen.oai.client import ModelClient, OpenAIWrapper
 from autogen.coding import DockerCommandLineCodeExecutor, LocalCommandLineCodeExecutor
 from loguru import logger
 from dotenv import load_dotenv
+from version import APP_NAME
 
 
 def md5_hash(text: str) -> str:
@@ -48,7 +49,8 @@ def get_db_uri(app_root: str = None) -> str:
     :param app_root: The root directory of the application.
     :return: The default database URI.
     """
-    db_uri = os.environ.get("AGENT_BUILDER_DB_URI")
+    db_uri = f"sqlite:///{os.path.join(app_root, 'database.sqlite')}"
+    db_uri = os.environ.get("AGENT_BUILDER_DB_URI") or db_uri
     logger.info(f"Using database URI: {db_uri}")
     return db_uri
 
@@ -355,6 +357,19 @@ def summarize_chat_history(
     response = client.create(messages=summarization_prompt, cache_seed=None)
     return response.choices[0].message.content
 
+def get_app_root() -> str:
+    """
+    Get the root directory of the application.
+
+    :return: The root directory of the application.
+    """
+    app_name = f".{APP_NAME}"
+    default_app_root = os.path.join(os.path.expanduser("~"), app_name)
+    if not os.path.exists(default_app_root):
+        os.makedirs(default_app_root, exist_ok=True)
+    app_root = os.environ.get("AGENTBUILDER_APPDIR") or default_app_root
+    return app_root
+
 def init_app_folders(app_file_path: str) -> Dict[str, str]:
     """
     Initialize folders needed for a web server, such as static file directories
@@ -370,6 +385,7 @@ def init_app_folders(app_file_path: str) -> Dict[str, str]:
 
     # load .env file if it exists
     env_file = os.path.join(app_root, ".env")
+    print(f"#### env_file : {env_file}")
     if os.path.exists(env_file):
         logger.info(f"Loaded environment variables from {env_file}")
         load_dotenv(env_file)
