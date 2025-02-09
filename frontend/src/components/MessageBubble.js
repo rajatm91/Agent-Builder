@@ -10,27 +10,22 @@ const MessageBubble = ({ message, isUser }) => {
         display: "flex",
         alignItems: "center",
         justifyContent: isUser ? "flex-end" : "flex-start",
-        my: 1
+        mb: 1,
       }}
     >
-      {/* Bot Icon (left) */}
       {!isUser && <SmartToyIcon sx={{ mr: 1, color: "blue" }} />}
 
-      {/* Message Bubble */}
-      <Typography
+      <Box
         sx={{
-          padding: "8px 12px",
-          borderRadius: "8px",
-          backgroundColor: isUser ? "#DCF8C6" : "#E3E3E3",
-          color: "#000",
-          maxWidth: "60%",
-          display: "inline-block"
+          backgroundColor: isUser ? "#1976d2" : "#e0e0e0",
+          color: isUser ? "#fff" : "#000",
+          padding: "10px",
+          borderRadius: "10px",
+          maxWidth: "70%",
         }}
       >
-        {message}
-      </Typography>
-
-      {/* User Icon (right) */}
+        <Typography>{message}</Typography>        
+      </Box>
       {isUser && <PersonIcon sx={{ ml: 1, color: "green" }} />}
     </Box>
   );
