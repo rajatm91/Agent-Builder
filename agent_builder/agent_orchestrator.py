@@ -233,11 +233,18 @@ class AgentOrchestrator:
 
     def run(self, message: str, clear_history: bool = False) -> None:
 
-        self.sender.initiate_chat(
-            self.receiver,
-            message=message,
-            clear_history=clear_history,
-        )
+        if isinstance(self.sender, ExtendedRetrieverAgent):
+            self.sender.initiate_chat(
+                self.receiver,
+                message=self.sender.message_generator, problem=message,
+                clear_history=clear_history,
+            )
+        else:
+            self.sender.initiate_chat(
+                self.receiver,
+                message=message,
+                clear_history=clear_history,
+            )
 
 
 class ExtendedConversableAgent(autogen.ConversableAgent):
