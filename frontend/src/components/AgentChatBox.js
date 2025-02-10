@@ -11,13 +11,13 @@ import MessageBubble from "./MessageBubble";
 import { Send, Mic, AttachFile } from "@mui/icons-material";
 import useWebSocket from "../websocket/useWebSocket";
 
-const ChatBox = ({ onCreateAgent }) => {
+const AgentChatBox = ({agent}) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false); // Track bot response status
   const [typingMessage, setTypingMessage] = useState(""); // State to hold the typing message
 
-  const { socketMessages, sendSocketMessage } = useWebSocket("create_agent");
+  const { socketMessages, sendSocketMessage } = useWebSocket("create_agent_chat");
   const messagesEndRef = useRef(null);
 
   // **Process WebSocket Messages and Update UI**
@@ -54,8 +54,7 @@ const ChatBox = ({ onCreateAgent }) => {
             modelName: modelMatch ? modelMatch[1] : "",
             reason: "Agent successfully created" // Static reason based on message pattern
           };
-
-          onCreateAgent(agentDetails);
+          
         }
       }
     }
@@ -83,6 +82,7 @@ const ChatBox = ({ onCreateAgent }) => {
     } else {
       setTypingMessage(""); // Clear typing message when done
     }
+
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [loading]);
 
@@ -102,8 +102,8 @@ const ChatBox = ({ onCreateAgent }) => {
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
-        width: "100%",
-        maxWidth: "100vw",
+        width: "98%",
+        maxWidth: "90vw",
         padding: 2,
         backgroundColor: "#f4f7fa"
       }}
@@ -117,7 +117,7 @@ const ChatBox = ({ onCreateAgent }) => {
           boxShadow: 3,
           borderRadius: 2,
           p: 2,
-          height: "80vh",
+          height: "60vh",
           overflow: "hidden"
         }}
       >
@@ -127,7 +127,7 @@ const ChatBox = ({ onCreateAgent }) => {
             flexGrow: 1,
             overflowY: "auto",
             paddingRight: 1,
-            maxHeight: "calc(100% - 80px)"
+            maxHeight: "calc(100% - 60px)"
           }}
         >
           {messages.length === 0 ? (
@@ -140,7 +140,7 @@ const ChatBox = ({ onCreateAgent }) => {
               }}
             >
               <Typography variant="h6" color="textSecondary">
-                Start chatting by typing a message...
+                `Start chatting by typing a message to {agent?.type} ...`
               </Typography>
             </Box>
           ) : (
@@ -205,4 +205,4 @@ const ChatBox = ({ onCreateAgent }) => {
   );
 };
 
-export default ChatBox;
+export default AgentChatBox;

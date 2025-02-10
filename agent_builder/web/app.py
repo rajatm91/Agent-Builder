@@ -18,6 +18,7 @@ from agent_builder.database import DBManager, workflow_from_id
 from agent_builder.utils import init_app_folders, check_and_cast_datetime_fields, md5_hash, test_model
 from loguru import logger
 
+from agent_builder.websocket_manager import run_websocket_server
 
 from agent_builder.chatmanager import ChatManager
 from agent_builder.datamodel import Response, Skill, Model, Message, Session, Workflow, Agent
@@ -80,7 +81,8 @@ async def lifespan(app: FastAPI):
     print("***** App stopped *****")
 
 
-app = FastAPI(lifespan=lifespan)
+# app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=run_websocket_server)
 
 
 # allow cross origin requests for testing on localhost:800* ports only
@@ -292,10 +294,11 @@ async def get_linked_agents(agent_id: int):
 
 
 @api.get("/workflows")
-async def list_workflows(user_id: str):
-    """List all workflows for a user"""
-    filters = {"user_id": user_id}
-    return list_entity(Workflow, filters=filters)
+async def list_workflows():
+    """List all workflows for a user"""    
+    return list_entity(Workflow)
+    # filters = {"user_id": user_id}
+    # return list_entity(Workflow, filters=filters)
 
 
 @api.get("/workflows/{workflow_id}")
@@ -446,7 +449,8 @@ async def process_socket_message(data: dict, websocket: WebSocket, client_id: st
         await websocket_manager.send_message(response_socket_message, websocket)
 
 
-@api.websocket("/ws/{client_id}")
+# @api.websocket("/ws/{client_id}")
+@api.websocket("/create_agent")
 async def websocket_endpoint(websocket: WebSocket, client_id: str):
     await websocket_manager.connect(websocket, client_id)
     try:
