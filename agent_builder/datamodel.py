@@ -23,7 +23,7 @@ class Message(SQLModel, table=True):
         default_factory=datetime.now,
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
-    user_id: Optional[str] = None
+    user_id: Optional[str] = "guestuser@gmail.com"
     role: str
     content: str
     session_id: Optional[int] = Field(
@@ -73,9 +73,10 @@ class Skill(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
     user_id: Optional[str] = None
+    name: str
     content: str
     description: Optional[str] = None
-    secrets: Optional[str] = Field(default={}, sa_column=Column(JSON))
+    secrets: Optional[Dict] = Field(default={}, sa_column=Column(JSON))
     libraries: Optional[Dict] = Field(default={}, sa_column=Column(JSON))
     agents: List["Agent"] = Relationship(
         back_populates="skills", link_model=AgentSkillLink
@@ -148,7 +149,7 @@ class RetrieverConfig(SQLModel, table=False):
 class AgentConfig(SQLModel, table=False):
     name: Optional[str] = None
     human_input_mode: str = "NEVER"
-    max_consecutive_reply: int = 10
+    max_consecutive_auto_reply: int = 10
     system_message: Optional[str] = None
     is_termination_msg: Optional[Union[bool, str, Callable]] = None
     code_execution_config: CodeExecutionConfigTypes = Field(
@@ -157,6 +158,15 @@ class AgentConfig(SQLModel, table=False):
     )
     default_auto_reply: Optional[str] = ""
     retrieve_config: Optional[RetrieverConfig] = None
+    llm_config: Optional[Union[LLMConfig, bool]] = Field(
+        default=False, sa_column=Column(JSON)
+    )
+
+    admin_name: Optional[str] = "Admin"
+    messages: Optional[List[Dict]] = Field(default_factory=list)
+    max_round: Optional[int] = 100
+    speaker_selection_method: Optional[str] = "auto"
+    allow_repeat_speaker: Optional[Union[bool, List["AgentConfig"]]] = True
 
 
 

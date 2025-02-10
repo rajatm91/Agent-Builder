@@ -98,12 +98,12 @@ api = FastAPI(root_path="/api")
 # mount an api route such that the main route serves the ui and the /api
 app.mount("/api", api)
 
-app.mount("/", StaticFiles(directory=ui_folder_path, html=True), name="ui")
-api.mount(
-    "/files",
-    StaticFiles(directory=folders["files_static_root"], html=True),
-    name="files",
-)
+# app.mount("/", StaticFiles(directory=ui_folder_path, html=True), name="ui")
+# api.mount(
+#     "/files",
+#     StaticFiles(directory=folders["files_static_root"], html=True),
+#     name="files",
+# )
 
 
 # manage websocket connections
@@ -139,7 +139,6 @@ def list_entity(
 
 def delete_entity(model_class: Any, filters: dict = None):
     """Delete an entity"""
-
     return dbmanager.delete(filters=filters, model_class=model_class)
 
 
@@ -171,6 +170,8 @@ async def list_models(user_id: str):
     return list_entity(Model, filters=filters)
 
 
+# display models
+
 @api.post("/models")
 async def create_model(model: Model):
     """Create a new model"""
@@ -200,6 +201,7 @@ async def delete_model(model_id: int, user_id: str):
     filters = {"id": model_id, "user_id": user_id}
     return delete_entity(Model, filters=filters)
 
+# display agents
 
 @api.get("/agents")
 async def list_agents(user_id: str):
@@ -290,6 +292,8 @@ async def get_linked_agents(agent_id: int):
     """Get all agents linked to an agent"""
     return dbmanager.get_linked_entities("agent_agent", agent_id, return_json=True)
 
+
+# display workflow
 
 @api.get("/workflows")
 async def list_workflows(user_id: str):
@@ -423,6 +427,7 @@ async def get_version():
         "status": True,
         "message": "Version retrieved successfully",
         "data": {"version": "0.0.1"},
+
     }
 
 
@@ -446,13 +451,14 @@ async def process_socket_message(data: dict, websocket: WebSocket, client_id: st
         await websocket_manager.send_message(response_socket_message, websocket)
 
 
-@api.websocket("/ws/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: str):
-    await websocket_manager.connect(websocket, client_id)
+@api.websocket("/ws/")
+async def websocket_endpoint(websocket: WebSocket):
+
+    await websocket_manager.connect(websocket, "2")
     try:
         while True:
             data = await websocket.receive_json()
-            await process_socket_message(data, websocket, client_id)
+            await process_socket_message(data, websocket, 2)
     except WebSocketDisconnect:
-        print(f"Client #{client_id} is disconnected")
+        print(f"Client #{2} is disconnected")
         await websocket_manager.disconnect(websocket)

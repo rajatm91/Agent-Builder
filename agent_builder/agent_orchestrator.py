@@ -1,3 +1,4 @@
+import os
 from typing import Dict, Optional, List, Any, Union
 
 from datetime import datetime
@@ -45,25 +46,40 @@ class AgentOrchestrator:
     def _serialize_agent(self,
                          agent: Agent,
                          mode: str = "python",
-                         include: Optional[Dict] = {},
+                         include: Optional[Dict] = {"config"},
                          exclude: Optional[Dict] = None
                          ) -> Dict:
 
         exclude = exclude or {}
         include = include or {}
         if agent.type != AgentType.groupchat:
-            exclude.update(
-                {
-                    "config": {
-                        "admin_name",
-                        "messages",
-                        "max_round",
-                        "admin_name",
-                        "speaker_selection_method",
-                        "allow_repeat_speaker"
+            if agent.type != AgentType.retrieverproxy:
+                exclude.update(
+                    {
+                        "config": {
+                            "admin_name",
+                            "messages",
+                            "max_round",
+                            "admin_name",
+                            "speaker_selection_method",
+                            "allow_repeat_speaker",
+                            "retrieve_config"
+                        }
                     }
-                }
-            )
+                )
+            else:
+                exclude.update(
+                    {
+                        "config": {
+                            "admin_name",
+                            "messages",
+                            "max_round",
+                            "admin_name",
+                            "speaker_selection_method",
+                            "allow_repeat_speaker"
+                        }
+                    }
+                )
         else:
             include = {
                 "config": {
