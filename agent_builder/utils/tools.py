@@ -23,6 +23,7 @@ class StructureOutput(BaseModel):
 
 
 
+
 def extract_parameters(content: str):
     """Calls OpenAI to extract agent_name, docs_path, and model_name from the input content."""
     try:
