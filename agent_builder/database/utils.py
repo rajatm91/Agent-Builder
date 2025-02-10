@@ -170,8 +170,8 @@ def init_db_samples(dbmanager: Any):
     logger.info("Initializing database with Default and Agent creator Workflows")
     # models
     gpt_4_model = Model(
-        model="gpt-4o-mini",
-        description="OpenAI GPT-4o mini model",
+        model="gpt-4o",
+        description="OpenAI GPT-4o model",
         user_id="guestuser@gmail.com",
         api_type="open_ai",
     )

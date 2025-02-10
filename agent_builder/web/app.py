@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
+from agent_builder.utils.tools import extract_parameters, create_retriever_agent
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -20,7 +21,7 @@ from loguru import logger
 
 
 from agent_builder.chatmanager import ChatManager
-from agent_builder.datamodel import Response, Skill, Model, Message, Session, Workflow, Agent
+from agent_builder.datamodel import Response, Skill, Model, Message, Session, Workflow, Agent, ContentRequest
 
 managers = {"chat": None}
 
@@ -429,6 +430,16 @@ async def get_version():
         "data": {"version": "0.0.1"},
 
     }
+
+
+@api.post("/create_agent")
+async def extract_agent_parameters(request: ContentRequest):
+    """Extracts agent parameters from user input and returns structured JSON response."""
+    extracted_params = extract_parameters(request.content)
+
+    agent = create_retriever_agent(**extracted_params)
+
+    return agent
 
 
 # websockets

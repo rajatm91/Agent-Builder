@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum  import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
-
+from pydantic import BaseModel
 from sqlalchemy import ForeignKey, Integer
 from sqlmodel import (
     JSON,
@@ -11,6 +11,9 @@ from sqlmodel import (
 from sqlmodel import Enum as SqlEnum
 
 SQLModel.model_config["protected_namespaces"] = ()
+
+class ContentRequest(BaseModel):
+    content: str
 
 class Message(SQLModel, table=True):
     __table_args__ = {"sqlite_autoincrement": True}
