@@ -82,8 +82,8 @@ async def lifespan(app: FastAPI):
     print("***** App stopped *****")
 
 
-app = FastAPI(lifespan=lifespan)
-# app = FastAPI(lifespan=run_websocket_server)
+# app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=run_websocket_server)
 
 
 # allow cross origin requests for testing on localhost:800* ports only
