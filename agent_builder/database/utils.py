@@ -13,6 +13,7 @@ from typing import Any
 from alembic import command, util
 from alembic.config import Config
 from loguru import logger
+from .system_prompt import AGENT_CREATOR_SYSTEM_MESSAGE
 
 # from ..utils.db_utils import get_db_uri
 from sqlmodel import Session, create_engine, text
@@ -29,6 +30,7 @@ from ..datamodel import (
     Workflow,
     WorkflowAgentLink,
 )
+
 
 
 def workflow_from_id(workflow_id: int, dbmanager: Any):
@@ -156,19 +158,20 @@ def run_migration(engine_uri: str):
 def init_db_samples(dbmanager: Any):
     workflows = dbmanager.get(Workflow).data
     workflow_names = [w.name for w in workflows]
+    print(f"### worflow : {workflow_names}")
     if (
         "Default Workflow" in workflow_names
-        and "Travel Planning Workflow" in workflow_names
+        and "Agent Creation Workflow" in workflow_names
     ):
         logger.info(
             "Database already initialized with Default and Travel Planning Workflows"
         )
         return
-    logger.info("Initializing database with Default and Travel Planning Workflows")
+    logger.info("Initializing database with Default and Agent creator Workflows")
     # models
     gpt_4_model = Model(
-        model="gpt-4o-mini",
-        description="OpenAI GPT-4o mini model",
+        model="gpt-4o",
+        description="OpenAI GPT-4o model",
         user_id="guestuser@gmail.com",
         api_type="open_ai",
     )
@@ -196,12 +199,20 @@ def init_db_samples(dbmanager: Any):
 
     # skills
 
-    generate_image_skill = Skill(
-        name="generate_images",
-        description="Generate and save images based on a user's query.",
-        content='\nfrom typing import List\nimport uuid\nimport requests  # to perform HTTP requests\nfrom pathlib import Path\n\nfrom openai import OpenAI\n\n\ndef generate_and_save_images(query: str, image_size: str = "1024x1024") -> List[str]:\n    """\n    Function to paint, draw or illustrate images based on the users query or request. Generates images from a given query using OpenAI\'s DALL-E model and saves them to disk.  Use the code below anytime there is a request to create an image.\n\n    :param query: A natural language description of the image to be generated.\n    :param image_size: The size of the image to be generated. (default is "1024x1024")\n    :return: A list of filenames for the saved images.\n    """\n\n    client = OpenAI()  # Initialize the OpenAI client\n    response = client.images.generate(model="dall-e-3", prompt=query, n=1, size=image_size)  # Generate images\n\n    # List to store the file names of saved images\n    saved_files = []\n\n    # Check if the response is successful\n    if response.data:\n        for image_data in response.data:\n            # Generate a random UUID as the file name\n            file_name = str(uuid.uuid4()) + ".png"  # Assuming the image is a PNG\n            file_path = Path(file_name)\n\n            img_url = image_data.url\n            img_response = requests.get(img_url)\n            if img_response.status_code == 200:\n                # Write the binary content to a file\n                with open(file_path, "wb") as img_file:\n                    img_file.write(img_response.content)\n                    print(f"Image saved to {file_path}")\n                    saved_files.append(str(file_path))\n            else:\n                print(f"Failed to download the image from {img_url}")\n    else:\n        print("No image data found in the response!")\n\n    # Return the list of saved files\n    return saved_files\n\n\n# Example usage of the function:\n# generate_and_save_images("A cute baby sea otter")\n',
-        user_id="guestuser@gmail.com",
+    # generate_image_skill = Skill(
+    #     name="generate_images",
+    #     description="Generate and save images based on a user's query.",
+    #     content='\nfrom typing import List\nimport uuid\nimport requests  # to perform HTTP requests\nfrom pathlib import Path\n\nfrom openai import OpenAI\n\n\ndef generate_and_save_images(query: str, image_size: str = "1024x1024") -> List[str]:\n    """\n    Function to paint, draw or illustrate images based on the users query or request. Generates images from a given query using OpenAI\'s DALL-E model and saves them to disk.  Use the code below anytime there is a request to create an image.\n\n    :param query: A natural language description of the image to be generated.\n    :param image_size: The size of the image to be generated. (default is "1024x1024")\n    :return: A list of filenames for the saved images.\n    """\n\n    client = OpenAI()  # Initialize the OpenAI client\n    response = client.images.generate(model="dall-e-3", prompt=query, n=1, size=image_size)  # Generate images\n\n    # List to store the file names of saved images\n    saved_files = []\n\n    # Check if the response is successful\n    if response.data:\n        for image_data in response.data:\n            # Generate a random UUID as the file name\n            file_name = str(uuid.uuid4()) + ".png"  # Assuming the image is a PNG\n            file_path = Path(file_name)\n\n            img_url = image_data.url\n            img_response = requests.get(img_url)\n            if img_response.status_code == 200:\n                # Write the binary content to a file\n                with open(file_path, "wb") as img_file:\n                    img_file.write(img_response.content)\n                    print(f"Image saved to {file_path}")\n                    saved_files.append(str(file_path))\n            else:\n                print(f"Failed to download the image from {img_url}")\n    else:\n        print("No image data found in the response!")\n\n    # Return the list of saved files\n    return saved_files\n\n\n# Example usage of the function:\n# generate_and_save_images("A cute baby sea otter")\n',
+    #     user_id="guestuser@gmail.com",
+    # )
+
+    register_skill = Skill(
+        name = "create_retriever_agent",
+        description = "create retriever agent based on a user's query.",
+        content="\nimport json;\nimport os;\nfrom typing import Union, List;\nfrom sqlmodel import Session, create_engine, text;\nfrom agent_builder.database.database_manager import DBManager;\nfrom agent_builder.datamodel import RetrieverConfig, AgentConfig, CodeExecutionConfigTypes, Agent, AgentType, Workflow, Model;\n\ndef create_retriever_agent(agent_name: str, docs_path: Union[str, List[str]], model_name: str = 'gpt-4o') -> dict:\n    dbmanager = DBManager(engine_uri=os.environ['AGENT_BUILDER_DB_URI']);\n    embedding_model = 'BAAI/bge-large-en-v1.5';\n\n    with Session(dbmanager.engine) as session:\n        model = dbmanager.get_items(Model, filters={'model': 'gpt-4o'}, session=session).data[0];\n        agent_ids = dbmanager.get_items(Agent, filters={'type': 'userproxy'}, session=session).data;\n\n    default_agent = ([agent for agent in agent_ids if json.loads(agent['config']).get('name') == 'default_assistant'][0]).id;\n\n    retriever_config = RetrieverConfig(\n        task='qa',\n        docs_path=docs_path,\n        collection_name=f'{agent_name}_collection',\n        db_config={'connection_string': os.environ['AGENT_BUILDER_DB_URI']},\n        model='gtp-4o',\n        get_or_create=True\n    );\n\n    agent_config = AgentConfig(\n        name=agent_name,\n        human_input_mode='NEVER',\n        max_consecutive_reply=1,\n        code_execution_config=CodeExecutionConfigTypes.none,\n        retrieve_config=retriever_config\n    );\n\n    retriever_proxy_agent = Agent(\n        user_id='guestuser@gmail.com',\n        type=AgentType.retrieverproxy,\n        config=agent_config.model_dump(mode='json'),\n    );\n\n    workflow = Workflow(\n        name=f'{agent_name} workflow',\n        description=f'{agent_name} workflow',\n        user_id='guestuser@gmail.com'\n    );\n\n    with Session(dbmanager.engine) as session:\n        session.add(retriever_proxy_agent);\n        session.add(workflow);\n\n        dbmanager.link(link_type='agent_model', primary_id=retriever_proxy_agent.id, secondary_id=model.id);\n        dbmanager.link(link_type='workflow_agent', primary_id=default_agent.id, secondary_id=retriever_proxy_agent.id, agent_type='sender');\n\n    return {\n        'name': agent_name,\n        'max_consecutive_auto_reply': 1,\n        'documentPath': docs_path,\n        'collection_name': f'{agent_name}_collection',\n        'model': model_name,\n        'embedding_model': embedding_model,\n        'availability': 'Available'\n    }",
+        user_id = "guestuser@gmail.com"
     )
+
 
     # agents
     user_proxy_config = AgentConfig(
@@ -220,7 +231,23 @@ def init_db_samples(dbmanager: Any):
         config=user_proxy_config.model_dump(mode="json"),
     )
 
-    painter_assistant_config = AgentConfig(
+    agent_create_config = AgentConfig(
+        name = "agent_create",
+        description="Agent Creator Agent",
+        human_input_mode="NEVER",
+        max_consecutive_auto_reply=25,
+        system_message=AGENT_CREATOR_SYSTEM_MESSAGE,
+        code_execution_config=CodeExecutionConfigTypes.none,
+        llm_config={},
+    )
+
+    agent_creator = Agent(
+        user_id="guestuser@gmail.com",
+        type=AgentType.assistant,
+        config=agent_create_config.model_dump(mode="json")
+    )
+
+    default_assistant_config = AgentConfig(
         name="default_assistant",
         description="Assistant Agent",
         human_input_mode="NEVER",
@@ -229,184 +256,75 @@ def init_db_samples(dbmanager: Any):
         code_execution_config=CodeExecutionConfigTypes.none,
         llm_config={},
     )
-    painter_assistant = Agent(
+
+    default_assistant = Agent(
         user_id="guestuser@gmail.com",
         type=AgentType.assistant,
-        config=painter_assistant_config.model_dump(mode="json"),
-    )
-
-    planner_assistant_config = AgentConfig(
-        name="planner_assistant",
-        description="Assistant Agent",
-        human_input_mode="NEVER",
-        max_consecutive_auto_reply=25,
-        system_message="You are a helpful assistant that can suggest a travel plan for a user. You are the primary cordinator who will receive suggestions or advice from other agents (local_assistant, language_assistant). You must ensure that the finally plan integrates the suggestions from other agents or team members. YOUR FINAL RESPONSE MUST BE THE COMPLETE PLAN. When the plan is complete and all perspectives are integrated, you can respond with TERMINATE.",
-        code_execution_config=CodeExecutionConfigTypes.none,
-        llm_config={},
-    )
-    planner_assistant = Agent(
-        user_id="guestuser@gmail.com",
-        type=AgentType.assistant,
-        config=planner_assistant_config.model_dump(mode="json"),
-    )
-
-    local_assistant_config = AgentConfig(
-        name="local_assistant",
-        description="Local Assistant Agent",
-        human_input_mode="NEVER",
-        max_consecutive_auto_reply=25,
-        system_message="You are a local assistant that can suggest local activities or places to visit for a user. You can suggest local activities, places to visit, restaurants to eat at, etc. You can also provide information about the weather, local events, etc. You can provide information about the local area, but you cannot suggest a complete travel plan. You can only provide information about the local area.",
-        code_execution_config=CodeExecutionConfigTypes.none,
-        llm_config={},
-    )
-    local_assistant = Agent(
-        user_id="guestuser@gmail.com",
-        type=AgentType.assistant,
-        config=local_assistant_config.model_dump(mode="json"),
-    )
-
-    language_assistant_config = AgentConfig(
-        name="language_assistant",
-        description="Language Assistant Agent",
-        human_input_mode="NEVER",
-        max_consecutive_auto_reply=25,
-        system_message="You are a helpful assistant that can review travel plans, providing feedback on important/critical tips about how best to address language or communication challenges for the given destination. If the plan already includes language tips, you can mention that the plan is satisfactory, with rationale.",
-        code_execution_config=CodeExecutionConfigTypes.none,
-        llm_config={},
-    )
-    language_assistant = Agent(
-        user_id="guestuser@gmail.com",
-        type=AgentType.assistant,
-        config=language_assistant_config.model_dump(mode="json"),
-    )
-
-    # group chat
-    travel_groupchat_config = AgentConfig(
-        name="travel_groupchat",
-        admin_name="groupchat",
-        description="Group Chat Agent Configuration",
-        human_input_mode="NEVER",
-        max_consecutive_auto_reply=25,
-        system_message="You are a group chat manager",
-        code_execution_config=CodeExecutionConfigTypes.none,
-        default_auto_reply="TERMINATE",
-        llm_config={},
-        speaker_selection_method="auto",
-    )
-    travel_groupchat_agent = Agent(
-        user_id="guestuser@gmail.com",
-        type=AgentType.groupchat,
-        config=travel_groupchat_config.model_dump(mode="json"),
+        config=default_assistant_config.model_dump(mode="json"),
     )
 
     # workflows
-    default_workflow = Workflow(
-        name="Default Workflow",
-        description="Default workflow",
-        user_id="guestuser@gmail.com",
+    # default_workflow = Workflow(
+    #     name="Default Workflow",
+    #     description="Default workflow",
+    #     user_id="guestuser@gmail.com",
+    # )
+
+    agent_creation_workflow = Workflow(
+        name="Agent Creation Workflow",
+        description="Workflow to create agents via chat",
+        user_id="guestuser@gmail.com"
     )
 
-    travel_workflow = Workflow(
-        name="Travel Planning Workflow",
-        description="Travel workflow",
-        user_id="guestuser@gmail.com",
-    )
 
     with Session(dbmanager.engine) as session:
         session.add(zephyr_model)
         session.add(google_gemini_model)
         #session.add(azure_model)
         session.add(gpt_4_model)
-        session.add(generate_image_skill)
+        session.add(register_skill)
         session.add(user_proxy)
-        session.add(painter_assistant)
-        session.add(travel_groupchat_agent)
-        session.add(planner_assistant)
-        session.add(local_assistant)
-        session.add(language_assistant)
+        session.add(agent_creator)
+        session.add(default_assistant)
 
-        session.add(default_workflow)
-        session.add(travel_workflow)
+        #session.add(default_workflow)
+        session.add(agent_creation_workflow)
+
         session.commit()
 
         dbmanager.link(
             link_type="agent_model",
-            primary_id=painter_assistant.id,
-            secondary_id=gpt_4_model.id,
+            primary_id=agent_creator.id,
+            secondary_id=gpt_4_model.id
         )
+
+        dbmanager.link(
+            link_type="agent_model",
+            primary_id=default_assistant.id,
+            secondary_id=gpt_4_model.id
+        )
+
         dbmanager.link(
             link_type="agent_skill",
-            primary_id=painter_assistant.id,
-            secondary_id=generate_image_skill.id,
+            primary_id=agent_creator.id,
+            secondary_id=register_skill.id
         )
+
+
         dbmanager.link(
             link_type="workflow_agent",
-            primary_id=default_workflow.id,
+            primary_id=agent_creation_workflow.id,
             secondary_id=user_proxy.id,
             agent_type="sender",
         )
+
         dbmanager.link(
             link_type="workflow_agent",
-            primary_id=default_workflow.id,
-            secondary_id=painter_assistant.id,
+            primary_id=agent_creation_workflow.id,
+            secondary_id=agent_creator.id,
             agent_type="receiver",
         )
 
-        # link agents to travel groupchat agent
-
-        dbmanager.link(
-            link_type="agent_agent",
-            primary_id=travel_groupchat_agent.id,
-            secondary_id=planner_assistant.id,
-        )
-        dbmanager.link(
-            link_type="agent_agent",
-            primary_id=travel_groupchat_agent.id,
-            secondary_id=local_assistant.id,
-        )
-        dbmanager.link(
-            link_type="agent_agent",
-            primary_id=travel_groupchat_agent.id,
-            secondary_id=language_assistant.id,
-        )
-        dbmanager.link(
-            link_type="agent_agent",
-            primary_id=travel_groupchat_agent.id,
-            secondary_id=user_proxy.id,
-        )
-        dbmanager.link(
-            link_type="agent_model",
-            primary_id=travel_groupchat_agent.id,
-            secondary_id=gpt_4_model.id,
-        )
-        dbmanager.link(
-            link_type="agent_model",
-            primary_id=planner_assistant.id,
-            secondary_id=gpt_4_model.id,
-        )
-        dbmanager.link(
-            link_type="agent_model",
-            primary_id=local_assistant.id,
-            secondary_id=gpt_4_model.id,
-        )
-        dbmanager.link(
-            link_type="agent_model",
-            primary_id=language_assistant.id,
-            secondary_id=gpt_4_model.id,
-        )
-
-        dbmanager.link(
-            link_type="workflow_agent",
-            primary_id=travel_workflow.id,
-            secondary_id=user_proxy.id,
-            agent_type="sender",
-        )
-        dbmanager.link(
-            link_type="workflow_agent",
-            primary_id=travel_workflow.id,
-            secondary_id=travel_groupchat_agent.id,
-            agent_type="receiver",
-        )
         logger.info(
-            "Successfully initialized database with Default and Travel Planning Workflows"
+            "Successfully initialized database with Agent creator Workflows"
         )
