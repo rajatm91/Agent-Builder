@@ -97,7 +97,7 @@ def create_retriever_agent(agent_name: str,
         db_config = {
             "connection_string": os.environ["AGENT_BUILDER_DB_URI"]
         },
-        model = "gtp-4o",
+        model = "gpt-4o",
         get_or_create=True
     )
 
@@ -117,7 +117,7 @@ def create_retriever_agent(agent_name: str,
 
     workflow = Workflow(
         name=f"{agent_name} workflow",
-        description="{agent_name} workflow",
+        description=f"{agent_name} workflow",
         user_id="guestuser@gmail.com"
     )
 
