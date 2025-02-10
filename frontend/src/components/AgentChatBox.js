@@ -9,14 +9,40 @@ import {
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import { Send, Mic, AttachFile } from "@mui/icons-material";
+import useWebSocket from "../websocket/useWebSocket";
 
-const ChatBox = ({ onCreateAgent }) => {
+const AgentChatBox = ({ agent }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false); // Track bot response status
   const [typingMessage, setTypingMessage] = useState(""); // State to hold the typing message
 
+  const { socketMessages, sendSocketMessage } = useWebSocket("ws");
   const messagesEndRef = useRef(null);
+
+  // **Process WebSocket Messages and Update UI**
+  useEffect(() => {
+    if (socketMessages.length > 0) {
+      const lastMessage = socketMessages[socketMessages.length - 1];
+      // Check if the message type is 'agent_response'
+      if (lastMessage?.type === "text") {
+        const messageContent = lastMessage?.content?.content;
+
+        if (messageContent) {
+          setMessages((prev) => [
+            ...prev,
+            { text: messageContent, isUser: false }
+          ]);
+
+          // Stop loading if message contains "TERMINATE"
+          if (messageContent.includes("TERMINATE")) {
+            setLoading(false);
+          }
+
+        }
+      }
+    }
+  }, [socketMessages]);
 
   // **Auto-scroll when new message arrives**
   useEffect(() => {
@@ -29,7 +55,7 @@ const ChatBox = ({ onCreateAgent }) => {
       const typingMessages = [
         "Please wait, processing your request...",
         "The system is generating a response...",
-        "Please wait, gathering the information...",
+        "please wait, gathering the information...",
         "Almost there, composing the answer..."
       ];
       let messageIndex = 0;
@@ -40,61 +66,32 @@ const ChatBox = ({ onCreateAgent }) => {
     } else {
       setTypingMessage(""); // Clear typing message when done
     }
+
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [loading]);
 
-  // **Create Agent API Call**
-  const createAgent = async (message) => {
-    setLoading(true); // Show loading state while creating the agent
-    try {            
-      const response = await fetch('http://localhost:8081/api/create_agent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: message
-        }),
-      });
-
-      const data = await response.json();    
-      if (data?.availability === 'Available') {
-        const agentDetails = {
-          name: data?.name,
-          documentPath: data?.documentPath,
-          collection_name:data?.collection_name,
-          model: data?.model,
-          embedding_model:data?.embedding_model,
-          reason: "Agent successfully created"
-        };
-        onCreateAgent(agentDetails);
-        setMessages((prev) => [
-          ...prev,
-          { text: `Agent creation Successfully with name ${data?.name}.`, isUser: false }
-        ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { text: "Agent creation failed. Please try again.", isUser: false }
-        ]);
-      }
-    } catch (error) {
-      console.error("Error creating agent:", error);
-      setMessages((prev) => [
-        ...prev,
-        { text: "Error occurred while creating agent.", isUser: false }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // **Send Message (Trigger Create Agent API)**
+  // **Send Message via WebSocket**
   const handleSend = () => {
     if (message.trim()) {
       setMessages((prev) => [...prev, { text: message, isUser: true }]);
-      createAgent(message);
+
+      
+      const messageObject = {
+        connection_id: "1",
+        data: {
+          connection_id: "1",
+          content: message, // use the message from the input
+          role: "user", // Assuming the sender is the user
+          user_id: agent.user_id, // Assuming agent's user ID is used
+          session_id: "c303282d-f2e6-46ca-a04a-35d3d873712d", // Example session ID (replace if needed)
+          workflow_id: 2, // Replace with actual workflow ID if available
+          message_type: "user_message"
+        },
+        type: "user_message"
+      };
+      sendSocketMessage(messageObject);
       setMessage("");
+      setLoading(true); // Show "Bot is typing..."
     }
   };
 
@@ -104,8 +101,8 @@ const ChatBox = ({ onCreateAgent }) => {
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
-        width: "100%",
-        maxWidth: "100vw",
+        width: "98%",
+        maxWidth: "90vw",
         padding: 2,
         backgroundColor: "#f4f7fa"
       }}
@@ -119,7 +116,7 @@ const ChatBox = ({ onCreateAgent }) => {
           boxShadow: 3,
           borderRadius: 2,
           p: 2,
-          height: "80vh",
+          height: "60vh",
           overflow: "hidden"
         }}
       >
@@ -129,7 +126,7 @@ const ChatBox = ({ onCreateAgent }) => {
             flexGrow: 1,
             overflowY: "auto",
             paddingRight: 1,
-            maxHeight: "calc(100% - 80px)"
+            maxHeight: "calc(100% - 60px)"
           }}
         >
           {messages.length === 0 ? (
@@ -142,7 +139,7 @@ const ChatBox = ({ onCreateAgent }) => {
               }}
             >
               <Typography variant="h6" color="textSecondary">
-                Start chatting by typing a message...
+                `Start chatting by typing a message to {agent?.type} ...`
               </Typography>
             </Box>
           ) : (
@@ -207,4 +204,4 @@ const ChatBox = ({ onCreateAgent }) => {
   );
 };
 
-export default ChatBox;
+export default AgentChatBox;
