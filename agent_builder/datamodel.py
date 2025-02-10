@@ -144,9 +144,10 @@ class RetrieverConfig(SQLModel, table=False):
     collection_name: str
     db_config: dict = Field(default_factory={}, sa_column=Column(JSON))
     embedding_model: str = "BAAI/bge-large-en-v1.5"
-    chunk_token_size: int = 512
+    chunk_token_size: int = 1024
     model: str
     get_or_create: bool
+
 
 
 class AgentConfig(SQLModel, table=False):
