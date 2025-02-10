@@ -1,11 +1,34 @@
-import React, { useState } from 'react';
-import { List, ListItem, ListItemText, Icon, Typography, Button } from '@mui/material';
-import { Person, Work, EmojiObjects, Description, Storage } from '@mui/icons-material'; // Add relevant icons
-import ChatBox from './ChatBox';
+import React, { useState } from "react";
+import {
+  List,
+  ListItem,
+  ListItemText,
+  Icon,
+  Typography,
+  Button,
+  CircularProgress,
+  Alert
+} from "@mui/material";
+import {
+  AccountCircle,
+  Category,
+  Badge,
+  Message
+} from "@mui/icons-material"; // Updated icons
+import ChatBox from "./ChatBox";
+import useAPIResponse from "../hooks/useGetAgentList";
+import AgentChatBox from "./AgentChatBox";
 
-const AgentList = ({ agents }) => {
+const AgentList = () => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [openChatBox, setOpenChatBox] = useState(false);
+
+  // Fetch agents using custom hook
+  const {
+    response: agentsNew,
+    loading,
+    error
+  } = useAPIResponse("agents", { user_id: "guestuser@gmail.com" });
 
   const handleAgentClick = (agent) => {
     setSelectedAgent(agent);
@@ -14,41 +37,54 @@ const AgentList = ({ agents }) => {
 
   return (
     <div>
-      <List>
-        {agents?.map((agent, index) => (
-          <ListItem button key={index} onClick={() => handleAgentClick(agent)}>
-            <Icon sx={{ mr: 2 }}>
-              <Person />
-            </Icon>
-            <ListItemText
-              primary={agent?.name}
-              secondary={agent?.modelName || agent?.reason}
-            />
-          </ListItem>
-        ))}
-      </List>
+      {/* Show loading indicator */}
+      {loading && <CircularProgress />}
+
+      {/* Show error message if API fails */}
+      {error && <Alert severity="error">{error}</Alert>}
+
+      {/* Render agents list */}
+      {!loading && !error && agentsNew?.length > 0 && (
+        <List>
+          {agentsNew.map((agent) => (
+            <ListItem
+              button
+              key={agent.id}
+              onClick={() => handleAgentClick(agent)}
+            >
+              <Icon sx={{ mr: 2 }}>
+                <AccountCircle />
+              </Icon>
+              <ListItemText
+                primary={agent.config?.name || "No Name"} 
+                secondary={agent.type || "No Type"}       
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
 
       {/* ChatBox Overlay */}
       {openChatBox && (
         <div
           style={{
-            position: 'fixed',
+            position: "fixed",
             top: 0,
             right: 0,
-            width: '80vw', // 80% of the viewport width
-            height: '100vh', // Full viewport height
-            backgroundColor: 'white',
-            boxShadow: '-2px 0 10px rgba(0,0,0,0.2)', // Shadow effect to give a drawer-like appearance
-            transform: openChatBox ? 'translateX(0)' : 'translateX(100%)', // Slide in/out from right to left
-            transition: 'transform 0.5s ease-in-out', // Smooth sliding effect
-            zIndex: 1000, // Ensure it's on top of other content
-            overflowY: 'auto', // To enable scrolling if content overflows
+            width: "80vw",
+            height: "100vh",
+            backgroundColor: "white",
+            boxShadow: "-2px 0 10px rgba(0,0,0,0.2)",
+            transform: openChatBox ? "translateX(0)" : "translateX(100%)",
+            transition: "transform 0.5s ease-in-out",
+            zIndex: 1000,
+            overflowY: "auto"
           }}
         >
           <div
             style={{
-              padding: '20px',
-              position: 'relative', // For positioning the close button
+              padding: "20px",
+              position: "relative"
             }}
           >
             {/* Close Button */}
@@ -56,37 +92,58 @@ const AgentList = ({ agents }) => {
               onClick={() => setOpenChatBox(false)}
               color="primary"
               style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                zIndex: 1100, // Ensure the button stays above other content
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                zIndex: 1100
               }}
             >
               Close
             </Button>
 
+            {/* Agent Details */}
             {selectedAgent ? (
               <>
-                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <EmojiObjects sx={{ mr: 1 }} /> Agent Details
+                <Typography
+                  variant="h6"
+                  sx={{ display: "flex", alignItems: "center", mb: 2 }}
+                >
+                  <Message sx={{ mr: 1 }} /> Agent Details
                 </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Person sx={{ mr: 1 }} /> <strong>Name:</strong> {selectedAgent.name}
+                <Typography
+                  variant="body1"
+                  sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                >
+                  <AccountCircle sx={{ mr: 1 }} /> <strong>User ID: </strong>{" "}
+                  {selectedAgent.user_id || "N/A"}
                 </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Storage sx={{ mr: 1 }} /> <strong>Model:</strong> {selectedAgent.modelName || 'N/A'}
+                <Typography
+                  variant="body1"
+                  sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                >
+                  <Category sx={{ mr: 1 }} /> <strong>Type: </strong>{" "}
+                  {selectedAgent.type || "N/A"}
                 </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Description sx={{ mr: 1 }} /> <strong>Document Path:</strong> {selectedAgent.documentPath || 'N/A'}
+                <Typography
+                  variant="body1"
+                  sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                >
+                  <Badge sx={{ mr: 1 }} /> <strong>Name: </strong>{" "}
+                  {selectedAgent.config?.name || "N/A"}
                 </Typography>
-                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Work sx={{ mr: 1 }} /> <strong>Reason:</strong> {selectedAgent.reason || 'N/A'}
-                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                >
+                  <Message sx={{ mr: 1 }} /> <strong>System Messages: </strong>{" "}
+                  {selectedAgent.config?.system_message || "N/A"}
+                </Typography>                
               </>
             ) : (
               <Typography variant="body1">No agent selected.</Typography>
             )}
-            <ChatBox selectedAgent={selectedAgent} />
+            {/* Agent Chat Box Component */}
+            <AgentChatBox agent={selectedAgent}/>
           </div>
         </div>
       )}

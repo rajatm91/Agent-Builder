@@ -11,7 +11,7 @@ const useWebSocket = (url) => {
       socketRef.current.close();
     }
 
-    socketRef.current = new WebSocket(url);
+    socketRef.current = new WebSocket(`ws://localhost:8080/${url}`);
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected");
