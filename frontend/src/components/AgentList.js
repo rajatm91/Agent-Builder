@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   List,
   ListItem,
@@ -15,20 +15,24 @@ import {
   Badge,
   Message
 } from "@mui/icons-material"; // Updated icons
-import ChatBox from "./ChatBox";
 import useAPIResponse from "../hooks/useGetAgentList";
 import AgentChatBox from "./AgentChatBox";
 
-const AgentList = () => {
+const AgentList = ({ refreshAgent }) => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [openChatBox, setOpenChatBox] = useState(false);
 
-  // Fetch agents using custom hook
+  // This effect will run whenever refreshAgent changes
+  useEffect(() => {
+    console.log("Refreshing agent list because refreshAgent changed.");
+  }, [refreshAgent]);
+
+
   const {
     response: agentsNew,
     loading,
     error
-  } = useAPIResponse("agents", { user_id: "guestuser@gmail.com" });
+  } = useAPIResponse("agents", { user_id: "guestuser@gmail.com", refreshKey: refreshAgent });
 
   const handleAgentClick = (agent) => {
     setSelectedAgent(agent);

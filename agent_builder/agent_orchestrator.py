@@ -1,3 +1,4 @@
+import os
 from typing import Dict, Optional, List, Any, Union
 
 from datetime import datetime
@@ -45,25 +46,40 @@ class AgentOrchestrator:
     def _serialize_agent(self,
                          agent: Agent,
                          mode: str = "python",
-                         include: Optional[Dict] = {},
+                         include: Optional[Dict] = {"config"},
                          exclude: Optional[Dict] = None
                          ) -> Dict:
 
         exclude = exclude or {}
         include = include or {}
         if agent.type != AgentType.groupchat:
-            exclude.update(
-                {
-                    "config": {
-                        "admin_name",
-                        "messages",
-                        "max_round",
-                        "admin_name",
-                        "speaker_selection_method",
-                        "allow_repeat_speaker"
+            if agent.type != AgentType.retrieverproxy:
+                exclude.update(
+                    {
+                        "config": {
+                            "admin_name",
+                            "messages",
+                            "max_round",
+                            "admin_name",
+                            "speaker_selection_method",
+                            "allow_repeat_speaker",
+                            "retrieve_config"
+                        }
                     }
-                }
-            )
+                )
+            else:
+                exclude.update(
+                    {
+                        "config": {
+                            "admin_name",
+                            "messages",
+                            "max_round",
+                            "admin_name",
+                            "speaker_selection_method",
+                            "allow_repeat_speaker"
+                        }
+                    }
+                )
         else:
             include = {
                 "config": {
@@ -217,11 +233,18 @@ class AgentOrchestrator:
 
     def run(self, message: str, clear_history: bool = False) -> None:
 
-        self.sender.initiate_chat(
-            self.receiver,
-            message=message,
-            clear_history=clear_history,
-        )
+        if isinstance(self.sender, ExtendedRetrieverAgent):
+            self.sender.initiate_chat(
+                self.receiver,
+                message=self.sender.message_generator, problem=message,
+                clear_history=clear_history,
+            )
+        else:
+            self.sender.initiate_chat(
+                self.receiver,
+                message=message,
+                clear_history=clear_history,
+            )
 
 
 class ExtendedConversableAgent(autogen.ConversableAgent):

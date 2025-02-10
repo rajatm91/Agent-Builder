@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
+from agent_builder.utils.tools import extract_parameters, create_retriever_agent
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -21,7 +22,7 @@ from loguru import logger
 from agent_builder.websocket_manager import run_websocket_server
 
 from agent_builder.chatmanager import ChatManager
-from agent_builder.datamodel import Response, Skill, Model, Message, Session, Workflow, Agent
+from agent_builder.datamodel import Response, Skill, Model, Message, Session, Workflow, Agent, ContentRequest
 
 managers = {"chat": None}
 
@@ -43,16 +44,16 @@ def message_handler():
             + " **"
         )
 
-        for connection, socket_client_id in websocket_manager.active_connections:
-            if message["connection_id"] == socket_client_id:
-                logger.info(
-                    f"Sending message to connection_id: {message['connection_id']}. Connection ID: {socket_client_id}"
-                )
-                asyncio.run(websocket_manager.send_message(message, connection))
-            else:
-                logger.info(
-                    f"Skipping message for connection_id: {message['connection_id']}. Connection ID: {socket_client_id}"
-                )
+        # for connection, socket_client_id in websocket_manager.active_connections:
+        #     # if message["connection_id"] == socket_client_id:
+        #     #     logger.info(
+        #     #         f"Sending message to connection_id: {message['connection_id']}. Connection ID: {socket_client_id}"
+        #     #     )
+        #     #     asyncio.run(websocket_manager.send_message(message, connection))
+        #     # else:
+        #     #     logger.info(
+        #     #         f"Skipping message for connection_id: {message['connection_id']}. Connection ID: {socket_client_id}"
+        #     #     )
 
         message_queue.task_done()
 
@@ -100,12 +101,12 @@ api = FastAPI(root_path="/api")
 # mount an api route such that the main route serves the ui and the /api
 app.mount("/api", api)
 
-app.mount("/", StaticFiles(directory=ui_folder_path, html=True), name="ui")
-api.mount(
-    "/files",
-    StaticFiles(directory=folders["files_static_root"], html=True),
-    name="files",
-)
+# app.mount("/", StaticFiles(directory=ui_folder_path, html=True), name="ui")
+# api.mount(
+#     "/files",
+#     StaticFiles(directory=folders["files_static_root"], html=True),
+#     name="files",
+# )
 
 
 # manage websocket connections
@@ -141,7 +142,6 @@ def list_entity(
 
 def delete_entity(model_class: Any, filters: dict = None):
     """Delete an entity"""
-
     return dbmanager.delete(filters=filters, model_class=model_class)
 
 
@@ -173,6 +173,8 @@ async def list_models(user_id: str):
     return list_entity(Model, filters=filters)
 
 
+# display models
+
 @api.post("/models")
 async def create_model(model: Model):
     """Create a new model"""
@@ -202,6 +204,7 @@ async def delete_model(model_id: int, user_id: str):
     filters = {"id": model_id, "user_id": user_id}
     return delete_entity(Model, filters=filters)
 
+# display agents
 
 @api.get("/agents")
 async def list_agents(user_id: str):
@@ -292,6 +295,8 @@ async def get_linked_agents(agent_id: int):
     """Get all agents linked to an agent"""
     return dbmanager.get_linked_entities("agent_agent", agent_id, return_json=True)
 
+
+# display workflow
 
 @api.get("/workflows")
 async def list_workflows():
@@ -426,7 +431,18 @@ async def get_version():
         "status": True,
         "message": "Version retrieved successfully",
         "data": {"version": "0.0.1"},
+
     }
+
+
+@api.post("/create_agent")
+async def extract_agent_parameters(request: ContentRequest):
+    """Extracts agent parameters from user input and returns structured JSON response."""
+    extracted_params = extract_parameters(request.content)
+
+    agent = create_retriever_agent(**extracted_params)
+
+    return agent
 
 
 # websockets
@@ -449,14 +465,14 @@ async def process_socket_message(data: dict, websocket: WebSocket, client_id: st
         await websocket_manager.send_message(response_socket_message, websocket)
 
 
-# @api.websocket("/ws/{client_id}")
-@api.websocket("/create_agent")
-async def websocket_endpoint(websocket: WebSocket, client_id: str):
-    await websocket_manager.connect(websocket, client_id)
+@api.websocket("/ws/")
+async def websocket_endpoint(websocket: WebSocket):
+
+    await websocket_manager.connect(websocket, "2")
     try:
         while True:
             data = await websocket.receive_json()
-            await process_socket_message(data, websocket, client_id)
+            await process_socket_message(data, websocket, 2)
     except WebSocketDisconnect:
-        print(f"Client #{client_id} is disconnected")
+        print(f"Client #{2} is disconnected")
         await websocket_manager.disconnect(websocket)

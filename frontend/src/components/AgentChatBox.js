@@ -11,50 +11,34 @@ import MessageBubble from "./MessageBubble";
 import { Send, Mic, AttachFile } from "@mui/icons-material";
 import useWebSocket from "../websocket/useWebSocket";
 
-const AgentChatBox = ({agent}) => {
+const AgentChatBox = ({ agent }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false); // Track bot response status
   const [typingMessage, setTypingMessage] = useState(""); // State to hold the typing message
 
-  const { socketMessages, sendSocketMessage } = useWebSocket("create_agent_chat");
+  const { socketMessages, sendSocketMessage } = useWebSocket("ws");
   const messagesEndRef = useRef(null);
 
   // **Process WebSocket Messages and Update UI**
   useEffect(() => {
     if (socketMessages.length > 0) {
       const lastMessage = socketMessages[socketMessages.length - 1];
-      if (lastMessage?.content?.content) {
-        setMessages((prev) => [
-          ...prev,
-          { text: lastMessage.content.content, isUser: false }
-        ]);
-        // setLoading(false); // Stop showing "Bot is typing..."
-        if (lastMessage?.content?.content?.includes("TERMINATE")) {
-          setLoading(false);
-        }
-        if (
-          lastMessage?.content?.content?.includes(
-            "has been successfully created"
-          )
-        ) {
-          const contentText = lastMessage?.content?.content;
+      // Check if the message type is 'agent_response'
+      if (lastMessage?.type === "text") {
+        const messageContent = lastMessage?.content?.content;
 
-          // Extracting details using regex
-          const nameMatch = contentText.match(/The retriever agent "(.*?)"/);
-          const documentPathMatch = contentText.match(
-            /indexing documents located at "(.*?)"/
-          );
-          const modelMatch = contentText.match(/using the "(.*?)" model/);
+        if (messageContent) {
+          setMessages((prev) => [
+            ...prev,
+            { text: messageContent, isUser: false }
+          ]);
 
-          // Constructing the object
-          const agentDetails = {
-            name: nameMatch ? nameMatch[1] : "",
-            documentPath: documentPathMatch ? documentPathMatch[1] : "",
-            modelName: modelMatch ? modelMatch[1] : "",
-            reason: "Agent successfully created" // Static reason based on message pattern
-          };
-          
+          // Stop loading if message contains "TERMINATE"
+          if (messageContent.includes("TERMINATE")) {
+            setLoading(false);
+          }
+
         }
       }
     }
@@ -90,7 +74,22 @@ const AgentChatBox = ({agent}) => {
   const handleSend = () => {
     if (message.trim()) {
       setMessages((prev) => [...prev, { text: message, isUser: true }]);
-      sendSocketMessage(message);
+
+      
+      const messageObject = {
+        connection_id: "1",
+        data: {
+          connection_id: "1",
+          content: message, // use the message from the input
+          role: "user", // Assuming the sender is the user
+          user_id: agent.user_id, // Assuming agent's user ID is used
+          session_id: "c303282d-f2e6-46ca-a04a-35d3d873712d", // Example session ID (replace if needed)
+          workflow_id: 2, // Replace with actual workflow ID if available
+          message_type: "user_message"
+        },
+        type: "user_message"
+      };
+      sendSocketMessage(messageObject);
       setMessage("");
       setLoading(true); // Show "Bot is typing..."
     }

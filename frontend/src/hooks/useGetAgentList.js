@@ -8,18 +8,19 @@ const useAPIResponse = (apiEndPoint, params) => {
 
   useEffect(() => {
     const fetchAPI = async () => {
+      setLoading(true); // Reset loading state
       try {
         const data = await apiService.get(apiEndPoint, params);
-        setResponse(data);        
+        setResponse(data);
       } catch (err) {
-        setError(err.message || "Failed to fetch workflows");
+        setError(err.message || "Failed to fetch data");
       } finally {
         setLoading(false);
       }
     };
 
     fetchAPI();
-  }, [apiEndPoint]);
+  }, [apiEndPoint, params?.refreshKey]); // Trigger refetch when refreshKey changes
 
   return { response, loading, error };
 };
