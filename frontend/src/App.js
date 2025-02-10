@@ -14,13 +14,12 @@ import WorkFlowsList from "./components/WorkFlowsList";
 import ModelsList from "./components/ModelsList";
 
 const App = () => {
-  const [agents, setAgents] = useState([]);
+  const [refreshAgent, setRefreshAgent] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openItem, setOpenedItem] = useState("");
 
   const handleCreateAgent = (details) => {
-    const newAgent = { id: agents.length + 1, ...details };
-    setAgents([...agents, newAgent]);
+    setRefreshAgent(!refreshAgent);
   };
 
   const openSideBar = (item) => {
@@ -76,7 +75,7 @@ const App = () => {
           </Grid>
           {/* Agent List Section */}
           <Grid item xs={12} md={3}>
-            <AgentList agents={agents} />
+            <AgentList refreshAgent={refreshAgent} />
           </Grid>
         </Grid>
       </Box>

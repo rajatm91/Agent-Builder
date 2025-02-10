@@ -17,7 +17,7 @@ const AgentChatBox = ({agent}) => {
   const [loading, setLoading] = useState(false); // Track bot response status
   const [typingMessage, setTypingMessage] = useState(""); // State to hold the typing message
 
-  const { socketMessages, sendSocketMessage } = useWebSocket("create_agent_chat");
+  const { socketMessages, sendSocketMessage } = useWebSocket("ws");
   const messagesEndRef = useRef(null);
 
   // **Process WebSocket Messages and Update UI**

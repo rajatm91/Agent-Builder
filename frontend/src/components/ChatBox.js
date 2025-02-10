@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import { Send, Mic, AttachFile } from "@mui/icons-material";
-import useWebSocket from "../websocket/useWebSocket";
 
 const ChatBox = ({ onCreateAgent }) => {
   const [message, setMessage] = useState("");
@@ -17,49 +16,7 @@ const ChatBox = ({ onCreateAgent }) => {
   const [loading, setLoading] = useState(false); // Track bot response status
   const [typingMessage, setTypingMessage] = useState(""); // State to hold the typing message
 
-  const { socketMessages, sendSocketMessage } = useWebSocket("create_agent");
   const messagesEndRef = useRef(null);
-
-  // **Process WebSocket Messages and Update UI**
-  useEffect(() => {
-    if (socketMessages.length > 0) {
-      const lastMessage = socketMessages[socketMessages.length - 1];
-      if (lastMessage?.content?.content) {
-        setMessages((prev) => [
-          ...prev,
-          { text: lastMessage.content.content, isUser: false }
-        ]);
-        // setLoading(false); // Stop showing "Bot is typing..."
-        if (lastMessage?.content?.content?.includes("TERMINATE")) {
-          setLoading(false);
-        }
-        if (
-          lastMessage?.content?.content?.includes(
-            "has been successfully created"
-          )
-        ) {
-          const contentText = lastMessage?.content?.content;
-
-          // Extracting details using regex
-          const nameMatch = contentText.match(/The retriever agent "(.*?)"/);
-          const documentPathMatch = contentText.match(
-            /indexing documents located at "(.*?)"/
-          );
-          const modelMatch = contentText.match(/using the "(.*?)" model/);
-
-          // Constructing the object
-          const agentDetails = {
-            name: nameMatch ? nameMatch[1] : "",
-            documentPath: documentPathMatch ? documentPathMatch[1] : "",
-            modelName: modelMatch ? modelMatch[1] : "",
-            reason: "Agent successfully created" // Static reason based on message pattern
-          };
-
-          onCreateAgent(agentDetails);
-        }
-      }
-    }
-  }, [socketMessages]);
 
   // **Auto-scroll when new message arrives**
   useEffect(() => {
@@ -72,7 +29,7 @@ const ChatBox = ({ onCreateAgent }) => {
       const typingMessages = [
         "Please wait, processing your request...",
         "The system is generating a response...",
-        "please wait, gathering the information...",
+        "Please wait, gathering the information...",
         "Almost there, composing the answer..."
       ];
       let messageIndex = 0;
@@ -86,13 +43,58 @@ const ChatBox = ({ onCreateAgent }) => {
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [loading]);
 
-  // **Send Message via WebSocket**
+  // **Create Agent API Call**
+  const createAgent = async (message) => {
+    setLoading(true); // Show loading state while creating the agent
+    try {            
+      const response = await fetch('http://localhost:8081/api/create_agent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: message
+        }),
+      });
+
+      const data = await response.json();    
+      if (data?.availability === 'Available') {
+        const agentDetails = {
+          name: data?.name,
+          documentPath: data?.documentPath,
+          collection_name:data?.collection_name,
+          model: data?.model,
+          embedding_model:data?.embedding_model,
+          reason: "Agent successfully created"
+        };
+        onCreateAgent(agentDetails);
+        setMessages((prev) => [
+          ...prev,
+          { text: `Agent creation Successfully with name ${data?.name}.`, isUser: false }
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { text: "Agent creation failed. Please try again.", isUser: false }
+        ]);
+      }
+    } catch (error) {
+      console.error("Error creating agent:", error);
+      setMessages((prev) => [
+        ...prev,
+        { text: "Error occurred while creating agent.", isUser: false }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // **Send Message (Trigger Create Agent API)**
   const handleSend = () => {
     if (message.trim()) {
       setMessages((prev) => [...prev, { text: message, isUser: true }]);
-      sendSocketMessage(message);
+      createAgent(message);
       setMessage("");
-      setLoading(true); // Show "Bot is typing..."
     }
   };
 
