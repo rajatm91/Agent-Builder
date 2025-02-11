@@ -29,10 +29,7 @@ class Message(SQLModel, table=True):
     user_id: Optional[str] = "guestuser@gmail.com"
     role: str
     content: str
-    session_id: Optional[int] = Field(
-        default=None,
-        sa_column=Column(Integer, ForeignKey("session.id", ondelete="CASCADE"))
-    )
+    session_id: Optional[int]
     connection_id: Optional[str] = None
     meta: Optional[Dict] = Field(default={}, sa_column=Column(JSON))
 
