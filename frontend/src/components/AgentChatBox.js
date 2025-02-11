@@ -8,7 +8,7 @@ import {
   CircularProgress
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
-import { Send, Mic, AttachFile } from "@mui/icons-material";
+// import { Send, Mic, AttachFile } from "@mui/icons-material";
 import useWebSocket from "../websocket/useWebSocket";
 
 const AgentChatBox = ({ agent }) => {
@@ -17,7 +17,7 @@ const AgentChatBox = ({ agent }) => {
   const [loading, setLoading] = useState(false); // Track bot response status
   const [typingMessage, setTypingMessage] = useState(""); // State to hold the typing message
 
-  const { socketMessages, sendSocketMessage } = useWebSocket("ws");
+  const { socketMessages, sendSocketMessage } = useWebSocket("api/ws");
   const messagesEndRef = useRef(null);
 
   // **Process WebSocket Messages and Update UI**
@@ -38,11 +38,26 @@ const AgentChatBox = ({ agent }) => {
           if (messageContent.includes("TERMINATE")) {
             setLoading(false);
           }
-
         }
       }
     }
   }, [socketMessages]);
+
+  // const test = {
+  //   message: {
+  //     connection_id: "2",
+  //     data: {
+  //       connection_id: "2",
+  //       content: "how to apply for personal loan ?",
+  //       role: "user",
+  //       user_id: "guestuser@gmail.com",
+  //       session_id: 2,
+  //       workflow_id: 2,
+  //       message_type: "user_message"
+  //     },
+  //     type: "user_message"
+  //   }
+  // };
 
   // **Auto-scroll when new message arrives**
   useEffect(() => {
@@ -75,20 +90,52 @@ const AgentChatBox = ({ agent }) => {
     if (message.trim()) {
       setMessages((prev) => [...prev, { text: message, isUser: true }]);
 
-      
+      // console.log('AGENT',agent)
       const messageObject = {
-        connection_id: "1",
+        connection_id: "2",
         data: {
-          connection_id: "1",
+          connection_id: "2",
           content: message, // use the message from the input
           role: "user", // Assuming the sender is the user
           user_id: agent.user_id, // Assuming agent's user ID is used
-          session_id: "c303282d-f2e6-46ca-a04a-35d3d873712d", // Example session ID (replace if needed)
-          workflow_id: 2, // Replace with actual workflow ID if available
+          session_id: 2,
+          workflow_id: agent?.id, // Replace with actual workflow ID if available
           message_type: "user_message"
         },
         type: "user_message"
       };
+
+      //   {
+      //     "connection_id": "2",
+      //   "data": {
+      //     "connection_id": "2",
+      //     "content": "how to apply for personal loan ?",
+      //         "role": "user",
+      //         "user_id": "guestuser@gmail.com",
+      //         "session_id": 2,
+      //         "workflow_id": 2,
+      //     "message_type": "user_message"
+      //   },
+      //   "type": "user_message"
+      // }
+
+      // const datanew = {
+      //   content: {
+      //     connection_id: "2",
+      //     data: {
+      //       connection_id: "2",
+      //       content: message,
+      //       role: "user",
+      //       user_id: "guestuser@gmail.com",
+      //       session_id: 2,
+      //       workflow_id: 2,
+      //       message_type: "user_message"
+      //     },
+      //     type: "user_message"
+      //   }
+      // };
+
+      console.log("*********", JSON.stringify(messageObject));
       sendSocketMessage(messageObject);
       setMessage("");
       setLoading(true); // Show "Bot is typing..."
@@ -175,12 +222,12 @@ const AgentChatBox = ({ agent }) => {
             backgroundColor: "#ffffff"
           }}
         >
-          <IconButton color="primary">
+          {/* <IconButton color="primary">
             <Mic />
           </IconButton>
           <IconButton color="primary">
             <AttachFile />
-          </IconButton>
+          </IconButton> */}
           <TextField
             fullWidth
             variant="outlined"
@@ -193,7 +240,7 @@ const AgentChatBox = ({ agent }) => {
             variant="contained"
             color="primary"
             onClick={handleSend}
-            startIcon={<Send />}
+            // startIcon={<Send />}
             sx={{ ml: 2 }}
           >
             Send

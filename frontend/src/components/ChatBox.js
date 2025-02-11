@@ -8,7 +8,7 @@ import {
   CircularProgress
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
-import { Send, Mic, AttachFile } from "@mui/icons-material";
+// import { Send, Mic, AttachFile } from "@mui/icons-material";
 
 const ChatBox = ({ onCreateAgent }) => {
   const [message, setMessage] = useState("");
@@ -179,10 +179,10 @@ const ChatBox = ({ onCreateAgent }) => {
           }}
         >
           <IconButton color="primary">
-            <Mic />
+            {/* <Mic /> */}
           </IconButton>
           <IconButton color="primary">
-            <AttachFile />
+            {/* <AttachFile /> */}
           </IconButton>
           <TextField
             fullWidth
@@ -196,7 +196,7 @@ const ChatBox = ({ onCreateAgent }) => {
             variant="contained"
             color="primary"
             onClick={handleSend}
-            startIcon={<Send />}
+            // startIcon={<Send />}
             sx={{ ml: 2 }}
           >
             Send

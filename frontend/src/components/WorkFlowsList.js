@@ -10,7 +10,7 @@ import {
   Collapse,
   Divider
 } from "@mui/material";
-import { Work } from "@mui/icons-material"; // Use Work icon for workflows
+// import { Work } from "@mui/icons-material"; // Use Work icon for workflows
 import useAPIResponse from "../hooks/useGetAgentList";
 
 const WorkFlowsList = () => {
@@ -46,9 +46,9 @@ const WorkFlowsList = () => {
                 button
                 onClick={() => handleWorkFlowItem(workflow)}
               >
-                <Icon sx={{ mr: 2 }}>
-                  <Work /> {/* Use Work icon for workflows */}
-                </Icon>
+                {/* <Icon sx={{ mr: 2 }}>
+                  <Work /> 
+                </Icon> */}
                 <ListItemText primary={workflow.name} />
               </ListItem>
               <Divider /> {/* Divider between items */}

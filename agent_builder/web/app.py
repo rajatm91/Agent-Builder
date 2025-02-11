@@ -81,8 +81,8 @@ async def lifespan(app: FastAPI):
     print("***** App stopped *****")
 
 
-# app = FastAPI(lifespan=lifespan)
-app = FastAPI(lifespan=run_websocket_server)
+app = FastAPI(lifespan=lifespan)
+# app = FastAPI(lifespan=run_websocket_server)
 
 
 # allow cross origin requests for testing on localhost:800* ports only
@@ -448,7 +448,8 @@ async def extract_agent_parameters(request: ContentRequest):
 
 
 async def process_socket_message(data: dict, websocket: WebSocket, client_id: str):
-    print(f"Client says: {data['type']}")
+    # print(f"Client says: {data['type']}")
+    print(f"Client says->: {data}")
     if data["type"] == "user_message":
         user_message = Message(**data["data"])
         session_id = data["data"].get("session_id", None)

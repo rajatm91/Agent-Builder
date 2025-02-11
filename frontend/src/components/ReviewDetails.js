@@ -1,6 +1,6 @@
 import React from "react";
 import { Paper, Typography, Box, Button } from "@mui/material";
-import { Edit, CheckCircle, Cancel } from "@mui/icons-material";
+// import { Edit, CheckCircle, Cancel } from "@mui/icons-material";
 
 const ReviewDetails = ({
   reviewDetails,
@@ -31,21 +31,21 @@ const ReviewDetails = ({
         <Button
           variant="contained"
           onClick={() => setModalOpen(true)}
-          startIcon={<Edit />}
+          // startIcon={<Edit />}
         >
           Edit
         </Button>
         <Button
           variant="contained"
           onClick={handleCreateAgent}
-          startIcon={<CheckCircle />}
+          // startIcon={<CheckCircle />}
         >
           Submit
         </Button>
         <Button
           variant="outlined"
           onClick={handleCancel}
-          startIcon={<Cancel />}
+          // startIcon={<Cancel />}
         >
           Cancel
         </Button>

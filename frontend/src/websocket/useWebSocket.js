@@ -11,7 +11,7 @@ const useWebSocket = (url) => {
       socketRef.current.close();
     }
 
-    socketRef.current = new WebSocket(`ws://localhost:8080/${url}/`);
+    socketRef.current = new WebSocket(`ws://localhost:8081/${url}/`);
 
     socketRef.current.onopen = () => {
       console.log("WebSocket connected");
@@ -44,9 +44,12 @@ const useWebSocket = (url) => {
     };
   };
 
-  const sendSocketMessage = (message) => {
+  const sendSocketMessage = (message) => {    
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({ content: message }));
+      
+      const newMessage =  JSON.stringify(message)
+      console.log('#####1#######', newMessage)
+      socketRef.current.send(newMessage);
     } else {
       console.warn("WebSocket is not connected. Message not sent.");
     }

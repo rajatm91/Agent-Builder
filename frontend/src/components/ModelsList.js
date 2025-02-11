@@ -10,7 +10,7 @@ import {
   Collapse,
   Divider
 } from "@mui/material";
-import { Person } from "@mui/icons-material"; // Add relevant icons
+// import { Person } from "@mui/icons-material"; // Add relevant icons
 import useAPIResponse from "../hooks/useGetAgentList";
 
 const ModelsList = () => {
@@ -43,7 +43,7 @@ const ModelsList = () => {
             <div key={model.id}>
               <ListItem button onClick={() => handleModelClick(model)}>
                 <Icon sx={{ mr: 2 }}>
-                  <Person />
+                  {/* <Person /> */}
                 </Icon>
                 <ListItemText
                   primary={model.model}

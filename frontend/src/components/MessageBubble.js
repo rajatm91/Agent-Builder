@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person"; // User icon
-import SmartToyIcon from "@mui/icons-material/SmartToy"; // Bot icon
+// import PersonIcon from "@mui/icons-material/Person"; // User icon
+// import SmartToyIcon from "@mui/icons-material/SmartToy"; // Bot icon
 
 const MessageBubble = ({ message, isUser }) => {
   return (
@@ -13,7 +13,7 @@ const MessageBubble = ({ message, isUser }) => {
         mb: 1,
       }}
     >
-      {!isUser && <SmartToyIcon sx={{ mr: 1, color: "blue" }} />}
+      {/* {!isUser && <SmartToyIcon sx={{ mr: 1, color: "blue" }} />} */}
 
       <Box
         sx={{
@@ -26,7 +26,7 @@ const MessageBubble = ({ message, isUser }) => {
       >
         <Typography>{message}</Typography>        
       </Box>
-      {isUser && <PersonIcon sx={{ ml: 1, color: "green" }} />}
+      {/* {isUser && <PersonIcon sx={{ ml: 1, color: "green" }} />} */}
     </Box>
   );
 };

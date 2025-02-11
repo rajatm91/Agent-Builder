@@ -9,12 +9,12 @@ import {
   CircularProgress,
   Alert
 } from "@mui/material";
-import {
-  AccountCircle,
-  Category,
-  Badge,
-  Message
-} from "@mui/icons-material"; // Updated icons
+// import {
+//   AccountCircle,
+//   Category,
+//   Badge,
+//   Message
+// } from "@mui/icons-material"; // Updated icons
 import useAPIResponse from "../hooks/useGetAgentList";
 import AgentChatBox from "./AgentChatBox";
 
@@ -32,8 +32,9 @@ const AgentList = ({ refreshAgent }) => {
     response: agentsNew,
     loading,
     error
-  } = useAPIResponse("agents", { user_id: "guestuser@gmail.com", refreshKey: refreshAgent });
+  } = useAPIResponse("workflows", { user_id: "guestuser@gmail.com", refreshKey: refreshAgent });
 
+  console.log('agentsNew',agentsNew)
   const handleAgentClick = (agent) => {
     setSelectedAgent(agent);
     setOpenChatBox(true);
@@ -56,13 +57,14 @@ const AgentList = ({ refreshAgent }) => {
               key={agent.id}
               onClick={() => handleAgentClick(agent)}
             >
-              <Icon sx={{ mr: 2 }}>
+              {/* <Icon sx={{ mr: 2 }}>
                 <AccountCircle />
-              </Icon>
+              </Icon> */}
               <ListItemText
-                primary={agent.config?.name || "No Name"} 
-                secondary={agent.type || "No Type"}       
+                primary={agent.name || "No Name"} 
+                secondary={agent.description || "No Type"}       
               />
+
             </ListItem>
           ))}
         </List>
@@ -112,34 +114,34 @@ const AgentList = ({ refreshAgent }) => {
                   variant="h6"
                   sx={{ display: "flex", alignItems: "center", mb: 2 }}
                 >
-                  <Message sx={{ mr: 1 }} /> Agent Details
+                  {/* <Message sx={{ mr: 1 }} /> Agent Details */}
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{ display: "flex", alignItems: "center", mb: 1 }}
                 >
-                  <AccountCircle sx={{ mr: 1 }} /> <strong>User ID: </strong>{" "}
+                  {/* <AccountCircle sx={{ mr: 1 }} /> <strong>User ID: </strong>{" "} */}
                   {selectedAgent.user_id || "N/A"}
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{ display: "flex", alignItems: "center", mb: 1 }}
                 >
-                  <Category sx={{ mr: 1 }} /> <strong>Type: </strong>{" "}
+                  {/* <Category sx={{ mr: 1 }} /> <strong>Type: </strong>{" "} */}
                   {selectedAgent.type || "N/A"}
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{ display: "flex", alignItems: "center", mb: 1 }}
                 >
-                  <Badge sx={{ mr: 1 }} /> <strong>Name: </strong>{" "}
+                  {/* <Badge sx={{ mr: 1 }} /> <strong>Name: </strong>{" "} */}
                   {selectedAgent.config?.name || "N/A"}
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{ display: "flex", alignItems: "center", mb: 1 }}
                 >
-                  <Message sx={{ mr: 1 }} /> <strong>System Messages: </strong>{" "}
+                  {/* <Message sx={{ mr: 1 }} /> <strong>System Messages: </strong>{" "} */}
                   {selectedAgent.config?.system_message || "N/A"}
                 </Typography>                
               </>

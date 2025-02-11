@@ -5,9 +5,9 @@ import {
   Typography,
   IconButton,
   Paper,
-  Drawer
+  Drawer,
+  Button
 } from "@mui/material";
-import { Chat, Close, GroupAdd, Storage, Work } from "@mui/icons-material"; // Import necessary icons
 import ChatBox from "./components/ChatBox";
 import AgentList from "./components/AgentList";
 import WorkFlowsList from "./components/WorkFlowsList";
@@ -48,9 +48,7 @@ const App = () => {
           borderRadius: 2
         }}
       >
-        <IconButton sx={{ mr: 2 }}>
-          <Chat sx={{ color: "#1976d2" }} />
-        </IconButton>
+        <IconButton sx={{ mr: 2 }}></IconButton>
         <Typography
           variant="h4"
           align="center"
@@ -58,12 +56,26 @@ const App = () => {
         >
           Agent Generator
         </Typography>
-        <IconButton sx={{ ml: 2 }} onClick={() => openSideBar("model")}>
-          <Storage sx={{ color: "#1976d2" }} /> {/* Model icon */}
-        </IconButton>
-        <IconButton sx={{ ml: 2 }} onClick={() => openSideBar("workflows")}>
-          <Work sx={{ color: "#1976d2" }} /> {/* Workflow icon */}
-        </IconButton>
+
+        <Box sx={{ mr: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => openSideBar("model")}
+            sx={{ ml: 2 }}
+          >
+            Model
+          </Button>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => openSideBar("workflows")}
+            sx={{ ml: 2 }}
+          >
+            Workflows
+          </Button>
+        </Box>
       </Paper>
 
       {/* Main Content Section */}
@@ -96,19 +108,14 @@ const App = () => {
         {/* Workflow Sidebar Header */}
         {openItem === "workflows" ? (
           <Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2
-              }}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setSidebarOpen(false)}
+              sx={{ ml: 2 }}
             >
-              <Typography variant="h6">Workflows</Typography>
-              <IconButton onClick={() => setSidebarOpen(false)}>
-                <Close />
-              </IconButton>
-            </Box>
+              Workflows
+            </Button>
 
             <WorkFlowsList />
           </Box>
@@ -123,9 +130,14 @@ const App = () => {
               }}
             >
               <Typography variant="h6">Models</Typography>
-              <IconButton onClick={() => setSidebarOpen(false)}>
-                <Close />
-              </IconButton>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setSidebarOpen(false)}
+                sx={{ ml: 2 }}
+              >
+                Close
+              </Button>
             </Box>
 
             {/* Models List */}
