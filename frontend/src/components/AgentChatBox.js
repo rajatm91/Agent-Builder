@@ -3,20 +3,41 @@ import {
   TextField,
   Button,
   Box,
-  Typography,
-  IconButton,
+  Typography,  
   CircularProgress
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
-// import { Send, Mic, AttachFile } from "@mui/icons-material";
+import useWebSocket from "../websocket/useWebSocket";
 
-const ChatBox = ({ onCreateAgent }) => {
+const AgentChatBox = ({ agent }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false); // Track bot response status
-  const [typingMessage, setTypingMessage] = useState(""); // State to hold the typing message
+  const [loading, setLoading] = useState(false); 
+  const [typingMessage, setTypingMessage] = useState("");
 
+  const { socketMessages, sendSocketMessage } = useWebSocket("api/ws");
   const messagesEndRef = useRef(null);
+
+  // **Process WebSocket Messages and Update UI**
+  useEffect(() => {
+    if (socketMessages.length > 0) {
+      const lastMessage = socketMessages[socketMessages.length - 1];
+      if (lastMessage?.type === "agent_response") {
+        const messageContent = lastMessage?.data?.data?.content;
+        
+        if (messageContent) {
+          setMessages((prev) => [
+            ...prev,
+            { text: messageContent, isUser: false }
+          ]);
+
+          if (messageContent.includes("TERMINATE")) {
+            setLoading(false);
+          }
+        }
+      }
+    }
+  }, [socketMessages]);
 
   // **Auto-scroll when new message arrives**
   useEffect(() => {
@@ -29,7 +50,7 @@ const ChatBox = ({ onCreateAgent }) => {
       const typingMessages = [
         "Please wait, processing your request...",
         "The system is generating a response...",
-        "Please wait, gathering the information...",
+        "please wait, gathering the information...",
         "Almost there, composing the answer..."
       ];
       let messageIndex = 0;
@@ -38,63 +59,34 @@ const ChatBox = ({ onCreateAgent }) => {
         messageIndex = (messageIndex + 1) % typingMessages.length;
       }, 3000);
     } else {
-      setTypingMessage(""); // Clear typing message when done
+      setTypingMessage(""); 
     }
-    return () => clearInterval(interval); // Cleanup interval on component unmount
+
+    return () => clearInterval(interval);
   }, [loading]);
 
-  // **Create Agent API Call**
-  const createAgent = async (message) => {
-    setLoading(true); // Show loading state while creating the agent
-    try {            
-      const response = await fetch('http://localhost:8081/api/create_agent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: message
-        }),
-      });
-
-      const data = await response.json();    
-      if (data?.availability === 'Available') {
-        const agentDetails = {
-          name: data?.name,
-          documentPath: data?.documentPath,
-          collection_name:data?.collection_name,
-          model: data?.model,
-          embedding_model:data?.embedding_model,
-          reason: "Agent successfully created"
-        };
-        onCreateAgent(agentDetails);
-        setMessages((prev) => [
-          ...prev,
-          { text: `Agent creation Successfully with name ${data?.name}.`, isUser: false }
-        ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { text: "Agent creation failed. Please try again.", isUser: false }
-        ]);
-      }
-    } catch (error) {
-      console.error("Error creating agent:", error);
-      setMessages((prev) => [
-        ...prev,
-        { text: "Error occurred while creating agent.", isUser: false }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // **Send Message (Trigger Create Agent API)**
+  // **Send Message via WebSocket**
   const handleSend = () => {
     if (message.trim()) {
       setMessages((prev) => [...prev, { text: message, isUser: true }]);
-      createAgent(message);
+
+      const messageObject = {
+        connection_id: "2",
+        data: {
+          connection_id: "2",
+          content: message,
+          role: "user", 
+          user_id: agent.user_id,
+          session_id: 2,
+          workflow_id: agent?.id,
+          message_type: "user_message"
+        },
+        type: "user_message"
+      };
+
+      sendSocketMessage(messageObject);
       setMessage("");
+      setLoading(true); 
     }
   };
 
@@ -104,8 +96,8 @@ const ChatBox = ({ onCreateAgent }) => {
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
-        width: "100%",
-        maxWidth: "100vw",
+        width: "98%",
+        maxWidth: "90vw",
         padding: 2,
         backgroundColor: "#f4f7fa"
       }}
@@ -119,7 +111,7 @@ const ChatBox = ({ onCreateAgent }) => {
           boxShadow: 3,
           borderRadius: 2,
           p: 2,
-          height: "80vh",
+          height: "60vh",
           overflow: "hidden"
         }}
       >
@@ -129,7 +121,7 @@ const ChatBox = ({ onCreateAgent }) => {
             flexGrow: 1,
             overflowY: "auto",
             paddingRight: 1,
-            maxHeight: "calc(100% - 80px)"
+            maxHeight: "calc(100% - 60px)"
           }}
         >
           {messages.length === 0 ? (
@@ -142,11 +134,11 @@ const ChatBox = ({ onCreateAgent }) => {
               }}
             >
               <Typography variant="h6" color="textSecondary">
-                Start chatting by typing a message...
+                Start chatting by typing a message to {agent?.name} ...
               </Typography>
             </Box>
           ) : (
-            messages.map((msg, index) => (
+            messages?.map((msg, index) => (
               <MessageBubble
                 key={index}
                 message={msg.text}
@@ -178,12 +170,6 @@ const ChatBox = ({ onCreateAgent }) => {
             backgroundColor: "#ffffff"
           }}
         >
-          <IconButton color="primary">
-            {/* <Mic /> */}
-          </IconButton>
-          <IconButton color="primary">
-            {/* <AttachFile /> */}
-          </IconButton>
           <TextField
             fullWidth
             variant="outlined"
@@ -196,7 +182,6 @@ const ChatBox = ({ onCreateAgent }) => {
             variant="contained"
             color="primary"
             onClick={handleSend}
-            // startIcon={<Send />}
             sx={{ ml: 2 }}
           >
             Send
@@ -207,4 +192,4 @@ const ChatBox = ({ onCreateAgent }) => {
   );
 };
 
-export default ChatBox;
+export default AgentChatBox;

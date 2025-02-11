@@ -19,6 +19,7 @@ from agent_builder.database import DBManager, workflow_from_id
 from agent_builder.utils import init_app_folders, check_and_cast_datetime_fields, md5_hash, test_model
 from loguru import logger
 
+from agent_builder.websocket_manager import run_websocket_server
 
 from agent_builder.chatmanager import ChatManager
 from agent_builder.datamodel import Response, Skill, Model, Message, Session, Workflow, Agent, ContentRequest
@@ -81,6 +82,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+# app = FastAPI(lifespan=run_websocket_server)
 
 
 # allow cross origin requests for testing on localhost:800* ports only
@@ -296,10 +298,11 @@ async def get_linked_agents(agent_id: int):
 # display workflow
 
 @api.get("/workflows")
-async def list_workflows(user_id: str):
-    """List all workflows for a user"""
-    filters = {"user_id": user_id}
-    return list_entity(Workflow, filters=filters)
+async def list_workflows():
+    """List all workflows for a user"""    
+    return list_entity(Workflow)
+    # filters = {"user_id": user_id}
+    # return list_entity(Workflow, filters=filters)
 
 
 @api.get("/workflows/{workflow_id}")
@@ -445,7 +448,8 @@ async def extract_agent_parameters(request: ContentRequest):
 
 
 async def process_socket_message(data: dict, websocket: WebSocket, client_id: str):
-    print(f"Client says: {data['type']}")
+    # print(f"Client says: {data['type']}")
+    print(f"Client says->: {data}")
     if data["type"] == "user_message":
         user_message = Message(**data["data"])
         session_id = data["data"].get("session_id", None)

@@ -1,46 +1,83 @@
-import React, { useState } from 'react';
-import { List, ListItem, ListItemText, Dialog, DialogActions, DialogContent, Button, Typography } from '@mui/material';
-import ChatBox from './ChatBox'; 
+import React, { useState } from "react";
+import {
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+  CircularProgress,
+  Alert,
+  Collapse,
+  Divider
+} from "@mui/material";
 
-const AgentList = ({ agents }) => {
+import useAPIResponse from "../hooks/useGetAgentList";
+
+const AgentList = () => {
   const [selectedAgent, setSelectedAgent] = useState(null);
-  const [openChatBox, setOpenChatBox] = useState(false);
+
+  const {
+    response: agentsNew,
+    loading,
+    error
+  } = useAPIResponse("agents", { user_id: "guestuser@gmail.com" });
 
   const handleAgentClick = (agent) => {
-    setSelectedAgent(agent);
-    setOpenChatBox(true);
+    // setSelectedAgent(agent);
+    setSelectedAgent(
+      selectedAgent?.id === agent.id ? null : agent // Toggle accordion open/close
+    );
+    console.log("*******AGENT********", agent);
   };
 
   return (
     <div>
-      <List>
-        {agents?.map((agent, index) => (
-          <ListItem button key={index} onClick={() => handleAgentClick(agent)}>
-            <ListItemText primary={agent.name} secondary={agent.role} />
-          </ListItem>
-        ))}
-      </List>
+      {/* Show loading indicator */}
+      {loading && <CircularProgress />}
 
-      {/* ChatBox Popup */}
-      <Dialog open={openChatBox} onClose={() => setOpenChatBox(false)} fullWidth maxWidth="md">
-        <DialogContent>
-          {selectedAgent ? (
-            <>
-              <Typography variant="h6">Agent Details</Typography>
-              <Typography variant="body1"><strong>Name:</strong> {selectedAgent.name}</Typography>
-              <Typography variant="body1"><strong>Role:</strong> {selectedAgent.role}</Typography>
-              <Typography variant="body1"><strong>Skills:</strong> {selectedAgent.skills || 'N/A'}</Typography>
-              <Typography variant="body1"><strong>Document Path:</strong> {selectedAgent.documentPath || 'N/A'}</Typography>
-            </>
-          ) : (
-            <Typography variant="body1">No agent selected.</Typography>
-          )}
-          <ChatBox selectedAgent={selectedAgent} />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenChatBox(false)} color="primary">Close</Button>
-        </DialogActions>
-      </Dialog>
+      {/* Show error message if API fails */}
+      {error && <Alert severity="error">{error}</Alert>}
+
+      {/* Render agents list */}
+
+      {!loading && !error && agentsNew?.length > 0 && (
+        <List>
+          {agentsNew?.map((agent) => (
+            <div key={agent?.id}>
+              <ListItem button onClick={() => handleAgentClick(agent)}>
+                <ListItemText
+                  primary={agent.config?.name || "No Name"}
+                  secondary={agent.user_id || "No Type"}
+                />
+              </ListItem>
+              <Divider /> {/* Divider between items */}
+              {/* Accordion Details */}
+              <Collapse in={selectedAgent?.id === agent?.id}>
+                <div style={{ paddingLeft: 20 }}>
+                  <Typography variant="body2" color="textSecondary">
+                    <strong>UserID:</strong> {selectedAgent?.id || "N/A"}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    <strong>Type:</strong> {selectedAgent?.type || "N/A"}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    <strong>Name:</strong>{" "}
+                    {selectedAgent?.config?.name || "N/A"}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    <strong>System Message:</strong>{" "}
+                    {selectedAgent?.config?.system_message || "N/A"}
+                  </Typography>
+                </div>
+              </Collapse>
+            </div>
+          ))}
+        </List>
+      )}
+
+      {/* If there are no agents */}
+      {!loading && !error && agentsNew?.length === 0 && (
+        <Typography>No Agents available</Typography>
+      )}
     </div>
   );
 };
