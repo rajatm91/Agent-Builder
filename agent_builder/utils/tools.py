@@ -23,27 +23,68 @@ class StructureOutput(BaseModel):
 
 
 
+
 def extract_parameters(content: str):
     """Calls OpenAI to extract agent_name, docs_path, and model_name from the input content."""
     try:
-        prompt = (
-            "You are an AI assistant that extracts structured information from user-provided text. "
-            "Your task is to identify and return a JSON object with the following keys:\n\n"
-            "- `agent_name`: The name of the agent mentioned in the text (if present).\n"
-            "- `docs_path`: The file path(s) where documents are stored (if present).\n"
-            "- `model_name`: The AI model mentioned in the text (default to 'gpt-4o' if none is explicitly stated).\n\n"
-            "### Examples:\n"
-            "1. Input: 'I want to create agent BOTCSearch. Files are stored at /Users/rajatmishra/development/test_documents and want to use gpt-4o model for RAG'\n"
-            "   Output: {\"agent_name\": \"BOTCSearch\", \"docs_path\": \"/Users/rajatmishra/development/test_documents\", \"model_name\": \"gpt-4o\"}\n\n"
-            "2. Input: 'Create an agent named SearchBot using the files at /mnt/data/documents and run it with gpt-3.5-turbo'\n"
-            "   Output: {\"agent_name\": \"SearchBot\", \"docs_path\": \"/mnt/data/documents\", \"model_name\": \"gpt-3.5-turbo\"}\n\n"
-            "3. Input: 'Build an agent called DocFinder that processes documents from /home/user/docs'\n"
-            "   Output: {\"agent_name\": \"DocFinder\", \"docs_path\": \"/home/user/docs\", \"model_name\": \"gpt-4o\"}\n\n"
-            "4. Input: 'Make a new agent IndexMaster. It should scan /var/lib/files for processing.'\n"
-            "   Output: {\"agent_name\": \"IndexMaster\", \"docs_path\": \"/var/lib/files\", \"model_name\": \"gpt-4o\"}\n\n"
-            "Now, extract the correct information from the following input:\n"
-            f"Input: '{content}'\n"
-            "Output (in JSON format):"
+        prompt = ("""
+            You are an AI assistant that extracts structured information from user-provided text.
+            Your task is to identify and return a JSON object with the following keys:
+            - `agent_name`: The name of the agent mentioned in the text (if present).
+            - `docs_path`: The file path(s) where documents are stored **or** a website URL (if present). If a website URL is provided **without 'https://', ensure it is appended automatically**.
+            - `model_name`: The AI model mentioned in the text (default to 'gpt-4o' if none is explicitly stated).
+            If `docs_path` contains a **directory path**, return it as is.
+            If a **website URL** is provided instead, return the URL in `docs_path`, ensuring that it starts with 'https://'.
+            ### **Examples:**
+            #### Example 1: Directory Path
+            **Input:**
+            I want to create agent BOTCSearch. Files are stored at /Users/rajatmishra/development/test_documents and want to use gpt-4o model for RAG.
+            **Output:**
+            {
+                "agent_name: "BOTCSearch",
+                "docs_path: "/Users/rajatmishra/development/test_documents",
+                "model_name: "gpt-4o"
+            }
+            #### Example 2: Directory Path with a Different Model
+            **Input:**
+            "Create an agent named SearchBot using the files at /mnt/data/documents and run it with gpt-3.5-turbo."
+            **Output:**
+            {
+              "agent_name": SearchBot",
+              "docs_path": "/mnt/data/documents",
+              "model_name": "gpt-3.5-turbo"
+            }
+            #### Example 3: Website URL Instead of Directory Path
+            **Input:**
+            "Build an agent called WebCrawler that processes documents from example.com/articles."
+            **Output:**
+            {
+              "agent_name": "WebCrawler",
+              "docs_path": "https://example.com/articles",
+              "model_name": "gpt-4o"
+            }
+            #### Example 4: Another Directory Path with Default Model
+            **Input:**
+            Make a new agent IndexMaster. It should scan /var/lib/files for processing."
+            **Output:**
+            {
+              "agent_name": "IndexMaster",
+              "docs_path": "/var/lib/files",
+              "model_name": "gpt-4o"
+            }
+            "#### Example 5: Website URL with Missing 'https://'
+            "**Input:**
+            ""Create an agent named NewsScraper to gather articles from newswebsite.com/latest."
+            "**Output:**
+            "{
+            "  "agent_name": "NewsScraper",
+            "  "docs_path": "https://newswebsite.com/latest",
+            "  "model_name": "gpt-4o"
+            }
+            **Now, extract the correct information from the following input:**
+            **Input:** '{content}'
+            **Output (in JSON format):**
+            """
         )
 
         response = client.beta.chat.completions.parse(
@@ -96,7 +137,7 @@ def create_retriever_agent(agent_name: str,
         db_config = {
             "connection_string": os.environ["AGENT_BUILDER_DB_URI"]
         },
-        model = "gtp-4o",
+        model = "gpt-4o",
         get_or_create=True
     )
 
@@ -116,7 +157,7 @@ def create_retriever_agent(agent_name: str,
 
     workflow = Workflow(
         name=f"{agent_name} workflow",
-        description="{agent_name} workflow",
+        description=f"{agent_name} workflow",
         user_id="guestuser@gmail.com"
     )
 
