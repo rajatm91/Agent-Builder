@@ -24,8 +24,7 @@ const useWebSocket = (url) => {
         const parsedData = JSON.parse(event.data);
         // Only update state if message type is 'text'
         if (
-          parsedData.type === "text" &&
-          parsedData.content.sender_name === "agent_creator_agent"
+          parsedData.type === "agent_response"
         ) {
           setSocketMessages((prev) => [...prev, parsedData]);
         }

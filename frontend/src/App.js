@@ -64,7 +64,7 @@ const App = () => {
             onClick={() => openSideBar("model")}
             sx={{ ml: 2 }}
           >
-            Model
+            Models List
           </Button>
 
           <Button
@@ -73,7 +73,7 @@ const App = () => {
             onClick={() => openSideBar("workflows")}
             sx={{ ml: 2 }}
           >
-            Workflows
+            Agents List
           </Button>
         </Box>
       </Paper>
@@ -87,7 +87,7 @@ const App = () => {
           </Grid>
           {/* Agent List Section */}
           <Grid item xs={12} md={3}>
-            <AgentList refreshAgent={refreshAgent} />
+            <WorkFlowsList refresh={refreshAgent} />
           </Grid>
         </Grid>
       </Box>
@@ -108,16 +108,25 @@ const App = () => {
         {/* Workflow Sidebar Header */}
         {openItem === "workflows" ? (
           <Box>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setSidebarOpen(false)}
-              sx={{ ml: 2 }}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2
+              }}
             >
-              Workflows
-            </Button>
-
-            <WorkFlowsList />
+              <Typography variant="h6">Agents</Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setSidebarOpen(false)}
+                sx={{ ml: 2 }}
+              >
+                Close
+              </Button>
+            </Box>
+            <AgentList />
           </Box>
         ) : (
           <Box>
@@ -140,7 +149,6 @@ const App = () => {
               </Button>
             </Box>
 
-            {/* Models List */}
             <ModelsList />
           </Box>
         )}

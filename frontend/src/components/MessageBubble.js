@@ -1,7 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-// import PersonIcon from "@mui/icons-material/Person"; // User icon
-// import SmartToyIcon from "@mui/icons-material/SmartToy"; // Bot icon
+import { formatMessage } from "../utils/userDetails";
 
 const MessageBubble = ({ message, isUser }) => {
   return (
@@ -10,7 +9,7 @@ const MessageBubble = ({ message, isUser }) => {
         display: "flex",
         alignItems: "center",
         justifyContent: isUser ? "flex-end" : "flex-start",
-        mb: 1,
+        mb: 1
       }}
     >
       {/* {!isUser && <SmartToyIcon sx={{ mr: 1, color: "blue" }} />} */}
@@ -22,10 +21,11 @@ const MessageBubble = ({ message, isUser }) => {
           padding: "10px",
           borderRadius: "10px",
           maxWidth: "70%",
+          wordBreak: "break-word"
         }}
       >
-        <Typography>{message}</Typography>        
-      </Box>
+        <Typography component="div">{formatMessage(message)}</Typography>
+      </Box>      
       {/* {isUser && <PersonIcon sx={{ ml: 1, color: "green" }} />} */}
     </Box>
   );

@@ -3,19 +3,17 @@ import {
   TextField,
   Button,
   Box,
-  Typography,
-  IconButton,
+  Typography,  
   CircularProgress
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
-// import { Send, Mic, AttachFile } from "@mui/icons-material";
 import useWebSocket from "../websocket/useWebSocket";
 
 const AgentChatBox = ({ agent }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false); // Track bot response status
-  const [typingMessage, setTypingMessage] = useState(""); // State to hold the typing message
+  const [loading, setLoading] = useState(false); 
+  const [typingMessage, setTypingMessage] = useState("");
 
   const { socketMessages, sendSocketMessage } = useWebSocket("api/ws");
   const messagesEndRef = useRef(null);
@@ -24,17 +22,15 @@ const AgentChatBox = ({ agent }) => {
   useEffect(() => {
     if (socketMessages.length > 0) {
       const lastMessage = socketMessages[socketMessages.length - 1];
-      // Check if the message type is 'agent_response'
-      if (lastMessage?.type === "text") {
-        const messageContent = lastMessage?.content?.content;
-
+      if (lastMessage?.type === "agent_response") {
+        const messageContent = lastMessage?.data?.data?.content;
+        
         if (messageContent) {
           setMessages((prev) => [
             ...prev,
             { text: messageContent, isUser: false }
           ]);
 
-          // Stop loading if message contains "TERMINATE"
           if (messageContent.includes("TERMINATE")) {
             setLoading(false);
           }
@@ -42,22 +38,6 @@ const AgentChatBox = ({ agent }) => {
       }
     }
   }, [socketMessages]);
-
-  // const test = {
-  //   message: {
-  //     connection_id: "2",
-  //     data: {
-  //       connection_id: "2",
-  //       content: "how to apply for personal loan ?",
-  //       role: "user",
-  //       user_id: "guestuser@gmail.com",
-  //       session_id: 2,
-  //       workflow_id: 2,
-  //       message_type: "user_message"
-  //     },
-  //     type: "user_message"
-  //   }
-  // };
 
   // **Auto-scroll when new message arrives**
   useEffect(() => {
@@ -79,10 +59,10 @@ const AgentChatBox = ({ agent }) => {
         messageIndex = (messageIndex + 1) % typingMessages.length;
       }, 3000);
     } else {
-      setTypingMessage(""); // Clear typing message when done
+      setTypingMessage(""); 
     }
 
-    return () => clearInterval(interval); // Cleanup interval on component unmount
+    return () => clearInterval(interval);
   }, [loading]);
 
   // **Send Message via WebSocket**
@@ -90,55 +70,23 @@ const AgentChatBox = ({ agent }) => {
     if (message.trim()) {
       setMessages((prev) => [...prev, { text: message, isUser: true }]);
 
-      // console.log('AGENT',agent)
       const messageObject = {
         connection_id: "2",
         data: {
           connection_id: "2",
-          content: message, // use the message from the input
-          role: "user", // Assuming the sender is the user
-          user_id: agent.user_id, // Assuming agent's user ID is used
+          content: message,
+          role: "user", 
+          user_id: agent.user_id,
           session_id: 2,
-          workflow_id: agent?.id, // Replace with actual workflow ID if available
+          workflow_id: agent?.id,
           message_type: "user_message"
         },
         type: "user_message"
       };
 
-      //   {
-      //     "connection_id": "2",
-      //   "data": {
-      //     "connection_id": "2",
-      //     "content": "how to apply for personal loan ?",
-      //         "role": "user",
-      //         "user_id": "guestuser@gmail.com",
-      //         "session_id": 2,
-      //         "workflow_id": 2,
-      //     "message_type": "user_message"
-      //   },
-      //   "type": "user_message"
-      // }
-
-      // const datanew = {
-      //   content: {
-      //     connection_id: "2",
-      //     data: {
-      //       connection_id: "2",
-      //       content: message,
-      //       role: "user",
-      //       user_id: "guestuser@gmail.com",
-      //       session_id: 2,
-      //       workflow_id: 2,
-      //       message_type: "user_message"
-      //     },
-      //     type: "user_message"
-      //   }
-      // };
-
-      console.log("*********", JSON.stringify(messageObject));
       sendSocketMessage(messageObject);
       setMessage("");
-      setLoading(true); // Show "Bot is typing..."
+      setLoading(true); 
     }
   };
 
@@ -186,11 +134,11 @@ const AgentChatBox = ({ agent }) => {
               }}
             >
               <Typography variant="h6" color="textSecondary">
-                `Start chatting by typing a message to {agent?.type} ...`
+                `Start chatting by typing a message to {agent?.name} ...`
               </Typography>
             </Box>
           ) : (
-            messages.map((msg, index) => (
+            messages?.map((msg, index) => (
               <MessageBubble
                 key={index}
                 message={msg.text}
@@ -222,12 +170,6 @@ const AgentChatBox = ({ agent }) => {
             backgroundColor: "#ffffff"
           }}
         >
-          {/* <IconButton color="primary">
-            <Mic />
-          </IconButton>
-          <IconButton color="primary">
-            <AttachFile />
-          </IconButton> */}
           <TextField
             fullWidth
             variant="outlined"
@@ -240,7 +182,6 @@ const AgentChatBox = ({ agent }) => {
             variant="contained"
             color="primary"
             onClick={handleSend}
-            // startIcon={<Send />}
             sx={{ ml: 2 }}
           >
             Send
