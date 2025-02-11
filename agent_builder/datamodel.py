@@ -29,10 +29,7 @@ class Message(SQLModel, table=True):
     user_id: Optional[str] = "guestuser@gmail.com"
     role: str
     content: str
-    session_id: Optional[int] = Field(
-        default=None,
-        sa_column=Column(Integer, ForeignKey("session.id", ondelete="CASCADE"))
-    )
+    session_id: Optional[int]
     connection_id: Optional[str] = None
     meta: Optional[Dict] = Field(default={}, sa_column=Column(JSON))
 
@@ -144,9 +141,10 @@ class RetrieverConfig(SQLModel, table=False):
     collection_name: str
     db_config: dict = Field(default_factory={}, sa_column=Column(JSON))
     embedding_model: str = "BAAI/bge-large-en-v1.5"
-    chunk_token_size: int = 512
+    chunk_token_size: int = 1024
     model: str
     get_or_create: bool
+
 
 
 class AgentConfig(SQLModel, table=False):

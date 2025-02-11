@@ -1,10 +1,4 @@
-# Copyright (c) 2023 - 2024, Owners of https://github.com/ag2ai
-#
-# SPDX-License-Identifier: Apache-2.0
-#
-# Portions derived from  https://github.com/microsoft/autogen are under the MIT License.
-# SPDX-License-Identifier: MIT
-# from .util import get_app_root
+
 import time
 from datetime import datetime
 from pathlib import Path
@@ -15,7 +9,7 @@ from alembic.config import Config
 from loguru import logger
 from .system_prompt import AGENT_CREATOR_SYSTEM_MESSAGE
 
-# from ..utils.db_utils import get_db_uri
+
 from sqlmodel import Session, create_engine, text
 
 from autogen.agentchat import AssistantAgent
@@ -158,10 +152,10 @@ def run_migration(engine_uri: str):
 def init_db_samples(dbmanager: Any):
     workflows = dbmanager.get(Workflow).data
     workflow_names = [w.name for w in workflows]
-    print(f"### worflow : {workflow_names}")
+    print(f"### workflow : {workflow_names}")
     if (
         "Default Workflow" in workflow_names
-        and "Agent Creation Workflow" in workflow_names
+        or "Agent Creation Workflow" in workflow_names
     ):
         logger.info(
             "Database already initialized with Default and Travel Planning Workflows"
@@ -206,12 +200,6 @@ def init_db_samples(dbmanager: Any):
     #     user_id="guestuser@gmail.com",
     # )
 
-    register_skill = Skill(
-        name = "create_retriever_agent",
-        description = "create retriever agent based on a user's query.",
-        content="\nimport json;\nimport os;\nfrom typing import Union, List;\nfrom sqlmodel import Session, create_engine, text;\nfrom agent_builder.database.database_manager import DBManager;\nfrom agent_builder.datamodel import RetrieverConfig, AgentConfig, CodeExecutionConfigTypes, Agent, AgentType, Workflow, Model;\n\ndef create_retriever_agent(agent_name: str, docs_path: Union[str, List[str]], model_name: str = 'gpt-4o') -> dict:\n    dbmanager = DBManager(engine_uri=os.environ['AGENT_BUILDER_DB_URI']);\n    embedding_model = 'BAAI/bge-large-en-v1.5';\n\n    with Session(dbmanager.engine) as session:\n        model = dbmanager.get_items(Model, filters={'model': 'gpt-4o'}, session=session).data[0];\n        agent_ids = dbmanager.get_items(Agent, filters={'type': 'userproxy'}, session=session).data;\n\n    default_agent = ([agent for agent in agent_ids if json.loads(agent['config']).get('name') == 'default_assistant'][0]).id;\n\n    retriever_config = RetrieverConfig(\n        task='qa',\n        docs_path=docs_path,\n        collection_name=f'{agent_name}_collection',\n        db_config={'connection_string': os.environ['AGENT_BUILDER_DB_URI']},\n        model='gtp-4o',\n        get_or_create=True\n    );\n\n    agent_config = AgentConfig(\n        name=agent_name,\n        human_input_mode='NEVER',\n        max_consecutive_reply=1,\n        code_execution_config=CodeExecutionConfigTypes.none,\n        retrieve_config=retriever_config\n    );\n\n    retriever_proxy_agent = Agent(\n        user_id='guestuser@gmail.com',\n        type=AgentType.retrieverproxy,\n        config=agent_config.model_dump(mode='json'),\n    );\n\n    workflow = Workflow(\n        name=f'{agent_name} workflow',\n        description=f'{agent_name} workflow',\n        user_id='guestuser@gmail.com'\n    );\n\n    with Session(dbmanager.engine) as session:\n        session.add(retriever_proxy_agent);\n        session.add(workflow);\n\n        dbmanager.link(link_type='agent_model', primary_id=retriever_proxy_agent.id, secondary_id=model.id);\n        dbmanager.link(link_type='workflow_agent', primary_id=default_agent.id, secondary_id=retriever_proxy_agent.id, agent_type='sender');\n\n    return {\n        'name': agent_name,\n        'max_consecutive_auto_reply': 1,\n        'documentPath': docs_path,\n        'collection_name': f'{agent_name}_collection',\n        'model': model_name,\n        'embedding_model': embedding_model,\n        'availability': 'Available'\n    }",
-        user_id = "guestuser@gmail.com"
-    )
 
 
     # agents
@@ -231,22 +219,6 @@ def init_db_samples(dbmanager: Any):
         config=user_proxy_config.model_dump(mode="json"),
     )
 
-    agent_create_config = AgentConfig(
-        name = "agent_create",
-        description="Agent Creator Agent",
-        human_input_mode="NEVER",
-        max_consecutive_auto_reply=25,
-        system_message=AGENT_CREATOR_SYSTEM_MESSAGE,
-        code_execution_config=CodeExecutionConfigTypes.none,
-        llm_config={},
-    )
-
-    agent_creator = Agent(
-        user_id="guestuser@gmail.com",
-        type=AgentType.assistant,
-        config=agent_create_config.model_dump(mode="json")
-    )
-
     default_assistant_config = AgentConfig(
         name="default_assistant",
         description="Assistant Agent",
@@ -264,17 +236,12 @@ def init_db_samples(dbmanager: Any):
     )
 
     # workflows
-    # default_workflow = Workflow(
-    #     name="Default Workflow",
-    #     description="Default workflow",
-    #     user_id="guestuser@gmail.com",
-    # )
-
-    agent_creation_workflow = Workflow(
-        name="Agent Creation Workflow",
-        description="Workflow to create agents via chat",
-        user_id="guestuser@gmail.com"
+    default_workflow = Workflow(
+        name="Default Workflow",
+        description="Default workflow",
+        user_id="guestuser@gmail.com",
     )
+
 
 
     with Session(dbmanager.engine) as session:
@@ -282,21 +249,14 @@ def init_db_samples(dbmanager: Any):
         session.add(google_gemini_model)
         #session.add(azure_model)
         session.add(gpt_4_model)
-        session.add(register_skill)
         session.add(user_proxy)
-        session.add(agent_creator)
         session.add(default_assistant)
 
-        #session.add(default_workflow)
-        session.add(agent_creation_workflow)
+        session.add(default_workflow)
+
 
         session.commit()
 
-        dbmanager.link(
-            link_type="agent_model",
-            primary_id=agent_creator.id,
-            secondary_id=gpt_4_model.id
-        )
 
         dbmanager.link(
             link_type="agent_model",
@@ -304,24 +264,19 @@ def init_db_samples(dbmanager: Any):
             secondary_id=gpt_4_model.id
         )
 
-        dbmanager.link(
-            link_type="agent_skill",
-            primary_id=agent_creator.id,
-            secondary_id=register_skill.id
-        )
 
 
         dbmanager.link(
             link_type="workflow_agent",
-            primary_id=agent_creation_workflow.id,
+            primary_id=default_workflow.id,
             secondary_id=user_proxy.id,
             agent_type="sender",
         )
 
         dbmanager.link(
             link_type="workflow_agent",
-            primary_id=agent_creation_workflow.id,
-            secondary_id=agent_creator.id,
+            primary_id=default_workflow.id,
+            secondary_id=default_assistant.id,
             agent_type="receiver",
         )
 
