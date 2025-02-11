@@ -43,16 +43,16 @@ def message_handler():
             + " **"
         )
 
-        # for connection, socket_client_id in websocket_manager.active_connections:
-        #     if message.connection_id == socket_client_id:
-        #         logger.info(
-        #             f"Sending message to connection_id: {message.connection_id}. Connection ID: {socket_client_id}"
-        #         )
-        #         asyncio.run(websocket_manager.send_message(message, connection))
-        #     else:
-        #         logger.info(
-        #             f"Skipping message for connection_id: {message['connection_id']}. Connection ID: {socket_client_id}"
-        #         )
+        for connection, socket_client_id in websocket_manager.active_connections:
+            if message.connection_id == socket_client_id:
+                logger.info(
+                    f"Sending message to connection_id: {message.connection_id}. Connection ID: {socket_client_id}"
+                )
+                asyncio.run(websocket_manager.send_message(message, connection))
+            else:
+                logger.info(
+                    f"Skipping message for connection_id: {message['connection_id']}. Connection ID: {socket_client_id}"
+                )
 
         message_queue.task_done()
 
@@ -64,7 +64,6 @@ folders = init_app_folders(app_file_path)
 ui_folder_path = Path(__file__).resolve().parent / "ui"
 
 database_engine_uri = folders["database_engine_uri"]
-print(database_engine_uri)
 dbmanager = DBManager(engine_uri=database_engine_uri)
 
 
