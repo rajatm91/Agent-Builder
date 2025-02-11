@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "agent-builder"
+version = "0.1.0"
+description = ""
+authors = ["Rajat Mishra <mishra.rajat91@gmail.com>"]
+#readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">3.10,<3.13"
+alembic = "^1.14.1"
+ag2 = {extras = ["retrievechat"], version = "^0.7.3"}
+sqlmodel = "^0.0.22"
+fastapi = "^0.115.8"
+python-dotenv = "^1.0.1"
+websockets = "^14.2"
+psycopg = "^3.2.4"
+loguru = "^0.7.3"
+typer = "^0.15.1"
+psycopg-binary = "^3.2.4"
+psycopg2-binary = "^2.9.10"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.8.1"
+isort = "^5.13.2"
+streamlit = "1.40.2"
+httpx = "0.28.0"
+
+
+[tool.poetry.scripts]
+agent-builder = "agent_builder.web.app:app"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
