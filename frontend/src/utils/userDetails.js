@@ -26,36 +26,42 @@ export const parseUserDetails = (inputString) => {
 
   return details;
 };
-
 export const formatMessage = (text) => {
   if (!text) return "";
 
   // Remove "TERMINATE" if present at the end
   text = text.replace(/\s*TERMINATE$/, "");
 
-  // Convert markdown-style links to HTML <a> tags
+
   const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
-  const formattedText = text.split(linkRegex).map((part, index) => {
-    if (index % 3 === 1) {
-      // This is the link text
-      return (
-        <a
-          key={index}
-          href={text.split(linkRegex)[index + 1]}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            color: "#1976d2",
-            textDecoration: "none",
-            fontWeight: "bold"
-          }}
-        >
-          {part}
-        </a>
-      );
-    }
-    return part;
+  const formattedText = [];
+  let lastIndex = 0;
+
+  text.replace(linkRegex, (match, linkText, url, index) => {
+    formattedText.push(text.substring(lastIndex, index));
+
+    formattedText.push(
+      <a
+        key={index}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          color: "#1976d2",
+          textDecoration: "underline",
+          fontWeight: "bold",
+          cursor: "pointer",
+        }}
+      >
+        {linkText}
+      </a>
+    );
+
+    lastIndex = index + match.length;
+    return match;
   });
+
+  formattedText.push(text.substring(lastIndex));
 
   return formattedText;
 };

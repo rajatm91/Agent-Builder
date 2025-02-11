@@ -134,7 +134,7 @@ const AgentChatBox = ({ agent }) => {
               }}
             >
               <Typography variant="h6" color="textSecondary">
-                `Start chatting by typing a message to {agent?.name} ...`
+                Start chatting by typing a message to {agent?.name} ...
               </Typography>
             </Box>
           ) : (
