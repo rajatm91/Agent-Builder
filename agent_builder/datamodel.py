@@ -141,9 +141,13 @@ class RetrieverConfig(SQLModel, table=False):
     collection_name: str
     db_config: dict = Field(default_factory={}, sa_column=Column(JSON))
     embedding_model: str = "BAAI/bge-large-en-v1.5"
-    chunk_token_size: int = 1024
-    model: str
+    chunk_token_size: int = 512
+    model: Optional[str] = Field(default="gpt-4o")
     get_or_create: bool
+    customize_prompt: Optional[str] = None
+    customize_answer_prefix: Optional[str] = None
+    distance_threshold: Optional[float] = None
+
 
 
 
