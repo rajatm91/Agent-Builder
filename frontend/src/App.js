@@ -3,10 +3,10 @@ import {
   Box,
   Grid,
   Typography,
-  IconButton,
   Paper,
   Drawer,
-  Button
+  Button,
+  Divider
 } from "@mui/material";
 import ChatBox from "./components/ChatBox";
 import AgentList from "./components/AgentList";
@@ -31,6 +31,7 @@ const App = () => {
     setOpenedItem(item);
     setSidebarOpen(true);
   };
+
   return (
     <Box
       sx={{
@@ -38,45 +39,46 @@ const App = () => {
         height: "100vh",
         display: "flex",
         flexDirection: "column",
-        background: "linear-gradient(135deg, #f5f7fa, #c3cfe2)"
+        background: "linear-gradient(135deg, #e0f7fa, #80deea)",
+        fontFamily: '"Roboto", sans-serif'
       }}
     >
       {/* Header Section with Icons and Title */}
       <Paper
         sx={{
           display: "flex",
-          justifyContent: "center",
+          justifyContent: "space-between",
           alignItems: "center",
           py: 2,
+          px: 4,
           mb: 3,
-          backgroundColor: "#fff",
-          borderRadius: 2
+          backgroundColor: "#ffffff",
+          borderRadius: 2,
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)"
         }}
       >
-        <IconButton sx={{ mr: 2 }}></IconButton>
         <Typography
           variant="h4"
-          align="center"
-          sx={{ flexGrow: 1, color: "#1976d2" }}
+          align="left"
+          sx={{ color: "#00796b", fontWeight: 600, flexGrow: 1 }}
         >
           Agent Generator
         </Typography>
 
-        <Box sx={{ mr: 2 }}>
+        <Box>
           <Button
             variant="contained"
             color="primary"
             onClick={() => openSideBar("model")}
-            sx={{ ml: 2 }}
+            sx={{ ml: 2, textTransform: "capitalize", borderRadius: 2 }}
           >
             Models List
           </Button>
-
           <Button
             variant="contained"
             color="primary"
             onClick={() => openSideBar("workflows")}
-            sx={{ ml: 2 }}
+            sx={{ ml: 2, textTransform: "capitalize", borderRadius: 2 }}
           >
             Agents List
           </Button>
@@ -84,7 +86,7 @@ const App = () => {
       </Paper>
 
       {/* Main Content Section */}
-      <Box sx={{ flex: 1, overflow: "auto", px: 3, pb: 3 }}>
+      <Box sx={{ flex: 1, overflow: "auto", px: 4, pb: 4 }}>
         <Grid container spacing={3} sx={{ height: "100%" }}>
           {/* ChatBox Section */}
           <Grid item xs={12} md={9}>
@@ -96,6 +98,7 @@ const App = () => {
           </Grid>
         </Grid>
       </Box>
+
       {/* Sidebar for Workflow & Models List */}
       <Drawer
         anchor="left"
@@ -103,10 +106,11 @@ const App = () => {
         onClose={() => setSidebarOpen(false)}
         sx={{
           "& .MuiDrawer-paper": {
-            width: "300px",
-            padding: "16px",
-            background: "#fff",
-            boxShadow: "2px 0 10px rgba(0,0,0,0.2)"
+            width: "320px",
+            padding: "24px",
+            background: "#ffffff",
+            boxShadow: "2px 0 10px rgba(0,0,0,0.2)",
+            borderRadius: "8px"
           }
         }}
       >
@@ -118,19 +122,22 @@ const App = () => {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                mb: 2
+                mb: 3
               }}
             >
-              <Typography variant="h6">Agents</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 500, color: "#00796b" }}>
+                Agents
+              </Typography>
               <Button
-                variant="contained"
+                variant="outlined"
                 color="primary"
                 onClick={() => setSidebarOpen(false)}
-                sx={{ ml: 2 }}
+                sx={{ borderRadius: 2 }}
               >
                 Close
               </Button>
             </Box>
+            <Divider sx={{ mb: 2 }} />
             <AgentList onRefresh={handleRefreshAgentListAfterEdit} />
           </Box>
         ) : (
@@ -140,20 +147,22 @@ const App = () => {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                mb: 2
+                mb: 3
               }}
             >
-              <Typography variant="h6">Models</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 500, color: "#00796b" }}>
+                Models
+              </Typography>
               <Button
-                variant="contained"
+                variant="outlined"
                 color="primary"
                 onClick={() => setSidebarOpen(false)}
-                sx={{ ml: 2 }}
+                sx={{ borderRadius: 2 }}
               >
                 Close
               </Button>
             </Box>
-
+            <Divider sx={{ mb: 2 }} />
             <ModelsList />
           </Box>
         )}

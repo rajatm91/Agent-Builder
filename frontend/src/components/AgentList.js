@@ -14,7 +14,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Collapse
+  Collapse,
+  Paper
 } from "@mui/material";
 import useAPIResponse from "../hooks/useGetAgentList";
 import apiService from "../api/apiService";
@@ -23,7 +24,7 @@ const AgentList = ({ onRefresh }) => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [editedAgent, setEditedAgent] = useState(null);
-  const [openAdvanced, setOpenAdvanced] = useState(false); // State for collapsible section
+  const [openAdvanced, setOpenAdvanced] = useState(false);
 
   const {
     response: agentsNew,
@@ -39,43 +40,26 @@ const AgentList = ({ onRefresh }) => {
   }, [onRefresh]);
 
   const handleAgentClick = (agent) => {
-    setSelectedAgent(
-      selectedAgent?.id === agent.id ? null : agent // Toggle accordion open/close
-    );
+    setSelectedAgent(selectedAgent?.id === agent.id ? null : agent);
   };
 
   const handleEditClick = (agent) => {
     setEditedAgent(agent);
-    // setEditedAgent(mockAgent);
     setOpenModal(true);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "system_message") {
-      setEditedAgent((prevState) => ({
-        ...prevState,
-        config: {
-          ...prevState.config,
+    setEditedAgent((prevState) => ({
+      ...prevState,
+      config: {
+        ...prevState.config,
+        retrieve_config: {
+          ...prevState.config.retrieve_config,
           [name]: value
         }
-      }));
-    } else if (
-      name === "customize_prompt" ||
-      name === "customize_answer_prefix" ||
-      name === "model"
-    ) {
-      setEditedAgent((prevState) => ({
-        ...prevState,
-        config: {
-          ...prevState.config,
-          retrieve_config: {
-            ...prevState.config.retrieve_config,
-            [name]: value
-          }
-        }
-      }));
-    }
+      }
+    }));
   };
 
   const handleSubmit = async () => {
@@ -105,24 +89,93 @@ const AgentList = ({ onRefresh }) => {
   };
 
   return (
-    <div>
+    <Box sx={{ padding: "4px", maxWidth: "800px", margin: "auto" }}>
       {loading && <CircularProgress />}
       {error && <Alert severity="error">{error}</Alert>}
 
       {!loading && !error && agentsNew?.length > 0 && (
-        <List>
+        <Paper elevation={3} sx={{ borderRadius: 2, p: 2 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: "bold", textAlign: "center", mb: 2 }}
+            color="primary"
+          >
+            Available Agents
+          </Typography>
+          <List>
+            {agentsNew?.map((agent) => (
+              <Box key={agent.id}>
+                {/* Agent List Item */}
+                <ListItem
+                  button
+                  onClick={() => handleAgentClick(agent)}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "12px",
+                    "&:hover": { backgroundColor: "#f0f0f0" }
+                  }}
+                >
+                  <ListItemText
+                    primary={
+                      <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                        {agent.config?.name}
+                      </Typography>
+                    }
+                    secondary={agent.user_id}
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleEditClick(agent)}
+                  >
+                    Edit
+                  </Button>
+                </ListItem>
+
+                {/* Divider */}
+                <Divider />
+              </Box>
+            ))}
+          </List>
+        </Paper>
+      )}
+
+      {/* {!loading && !error && agentsNew?.length > 0 && (
+        <List
+          sx={{
+            backgroundColor: "#f9f9f9",
+            borderRadius: "8px",
+            padding: "10px"
+          }}
+        >
           {agentsNew?.map((agent) => (
             <div key={agent?.id}>
-              <ListItem button onClick={() => handleAgentClick(agent)}>
+              <ListItem
+                button
+                onClick={() => handleAgentClick(agent)}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "15px",
+                  "&:hover": { backgroundColor: "#f0f0f0" }
+                }}
+              >                
+
                 <ListItemText
-                  primary={agent.config?.name || "No Name"}
-                  secondary={agent.user_id || "No Type"}
+                  primary={
+                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                      {agent.config?.name }
+                    </Typography>
+                  }
+                  secondary={agent.user_id}
                 />
                 <Button
                   variant="contained"
                   color="primary"
                   onClick={() => handleEditClick(agent)}
-                  style={{ marginTop: 10 }}
                 >
                   Edit
                 </Button>
@@ -131,7 +184,7 @@ const AgentList = ({ onRefresh }) => {
             </div>
           ))}
         </List>
-      )}
+      )} */}
 
       {!loading && !error && agentsNew?.length === 0 && (
         <Typography>No Agents available</Typography>
@@ -144,40 +197,56 @@ const AgentList = ({ onRefresh }) => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>{getDialogTitle(editedAgent?.type)}</DialogTitle>
+        <DialogTitle
+          sx={{
+            fontWeight: "bold",
+            backgroundColor: "#f5f5f5",
+            padding: "16px"
+          }}
+        >
+          {getDialogTitle(editedAgent?.type)}
+        </DialogTitle>
         <DialogContent>
-          <Box sx={{ padding: "20px", maxWidth: "80%" }}>
-            <Typography variant="body1" marginBottom="20px">
-              <strong>Agent Name:</strong> {editedAgent?.config?.name || "N/A"}
+          <Box sx={{ padding: "20px" }}>
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: "bold", marginBottom: "10px" }}
+            >
+              Agent Name:{" "}
+              <span style={{ fontWeight: "normal" }}>
+                {editedAgent?.config?.name || "N/A"}
+              </span>
             </Typography>
-            <Typography variant="body1" marginBottom="20px">
-              <strong>Human Input Mode:</strong>
-              {editedAgent?.config?.human_input_mode || "N/A"}
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: "bold", marginBottom: "10px" }}
+            >
+              Human Input Mode:{" "}
+              <span style={{ fontWeight: "normal" }}>
+                {editedAgent?.config?.human_input_mode || "N/A"}
+              </span>
             </Typography>
-            <Typography variant="body1" marginBottom="20px">
-              <strong>Knowledge Hub:</strong>
-              {editedAgent?.config?.retrieve_config?.docs_path || "N/A"}
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: "bold", marginBottom: "20px" }}
+            >
+              Knowledge Hub:{" "}
+              <span style={{ fontWeight: "normal" }}>
+                {editedAgent?.config?.retrieve_config?.docs_path || "N/A"}
+              </span>
             </Typography>
 
-            {/* Editable Fields */}
-            <Typography variant="subtitle1" style={{ fontWeight: "bold" }}>
-              Roles and Responsibility
-            </Typography>
             <TextField
               label="Roles and Responsibility"
-              name="system_message" // Make it Bold
+              name="system_message"
               value={editedAgent?.config?.system_message || ""}
               onChange={handleChange}
               fullWidth
               margin="normal"
               multiline
               minRows={3}
-              maxRows={6}
             />
 
-            <Typography variant="subtitle1" style={{ fontWeight: "bold" }}>
-              Customize Prompt
-            </Typography>
             <TextField
               label="Customize Prompt"
               name="customize_prompt"
@@ -189,9 +258,6 @@ const AgentList = ({ onRefresh }) => {
               margin="normal"
             />
 
-            <Typography variant="subtitle1" style={{ fontWeight: "bold" }}>
-              Customize Answer Prefix
-            </Typography>
             <TextField
               label="Customize Answer Prefix"
               name="customize_answer_prefix"
@@ -204,27 +270,16 @@ const AgentList = ({ onRefresh }) => {
               margin="normal"
             />
 
-            {/* Customizable Fields */}
+            {/* Advanced Options */}
             <Box sx={{ marginTop: "20px" }}>
               <Button
                 onClick={() => setOpenAdvanced(!openAdvanced)}
                 variant="outlined"
-                style={{ marginBottom: 10 }}
+                sx={{ width: "100%", marginBottom: "10px" }}
               >
                 {openAdvanced ? "Hide Advanced Topics" : "Show Advanced Topics"}
               </Button>
               <Collapse in={openAdvanced}>
-                <Typography variant="body1" marginBottom="20px">
-                  <strong>Retriever Embedding Model:</strong>
-                  {editedAgent?.config?.retrieve_config?.embedding_model ||
-                    "N/A"}
-                </Typography>
-                <Typography variant="body1" marginBottom="20px">
-                  <strong>Retriever Chunk Token Size:</strong>
-                  {editedAgent?.config?.retrieve_config?.chunk_token_size ||
-                    "N/A"}
-                </Typography>
-
                 <TextField
                   label="Model"
                   name="model"
@@ -233,24 +288,52 @@ const AgentList = ({ onRefresh }) => {
                   fullWidth
                   margin="normal"
                 />
-                <Typography variant="body1" marginBottom="20px">
-                  <strong>Retriever Task:</strong>
-                  {editedAgent?.config?.retrieve_config?.task || "N/A"}
+
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: "bold", marginBottom: "10px" }}
+                >
+                  Retriever Task:{" "}
+                  <span style={{ fontWeight: "normal" }}>
+                    {editedAgent?.config?.retrieve_config?.task || "N/A"}
+                  </span>
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: "bold", marginBottom: "10px" }}
+                >
+                  Retriever Embedding Model:{" "}
+                  <span style={{ fontWeight: "normal" }}>
+                    {editedAgent?.config?.retrieve_config?.embedding_model ||
+                      "N/A"}
+                  </span>
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: "bold", marginBottom: "20px" }}
+                >
+                  Retriever Chunk Token Size:{" "}
+                  <span style={{ fontWeight: "normal" }}>
+                    {editedAgent?.config?.retrieve_config?.chunk_token_size ||
+                      "N/A"}
+                  </span>
                 </Typography>
               </Collapse>
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ padding: "16px", backgroundColor: "#f5f5f5" }}>
           <Button onClick={() => setOpenModal(false)} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} color="primary">
+          <Button onClick={handleSubmit} color="primary" variant="contained">
             Submit
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Box>
   );
 };
 

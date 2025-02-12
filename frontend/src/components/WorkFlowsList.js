@@ -6,25 +6,23 @@ import {
   Typography,
   CircularProgress,
   Alert,
-  Collapse,
-  Divider,
   Button,
   Paper,
-  Box
+  Box,
+  IconButton
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import useAPIResponse from "../hooks/useGetAgentList";
 import AgentChatBox from "./AgentChatBox";
 
 const WorkFlowsList = ({ refresh }) => {
-  const [selectWorkFlows, setSelectedWorkFlows] = useState(null);
+  const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [openChatBox, setOpenChatBox] = useState(false);
 
-  // This effect will run whenever refreshAgent changes
   useEffect(() => {
     console.log("Refreshing workflows list because refresh changed.");
   }, [refresh]);
 
-  // Fetch workflows using custom hook
   const {
     response: workflows,
     loading,
@@ -35,83 +33,108 @@ const WorkFlowsList = ({ refresh }) => {
   });
 
   const handleWorkFlowItem = (workflow) => {
-    setSelectedWorkFlows(workflow);
+    setSelectedWorkflow(workflow);
     setOpenChatBox(true);
   };
 
   return (
-    <div>
-      {/* Show loading indicator */}
-      {loading && <CircularProgress />}
+    <Box>
+      {/* Loading Indicator */}
+      {loading && (
+        <CircularProgress sx={{ display: "block", margin: "auto" }} />
+      )}
 
-      {/* Show error message if API fails */}
+      {/* Error Handling */}
       {error && <Alert severity="error">{error}</Alert>}
 
-      {/* Render workflows list */}
+      {/* Workflows List */}
       {!loading && !error && workflows?.length > 0 && (
-        <List>
-          {workflows.map((workflow) => (
-            <div style={{ marginLeft: 20 }} key={workflow?.id}>
-              <ListItem button onClick={() => handleWorkFlowItem(workflow)}>
-                <ListItemText
-                  primary={workflow?.name}
-                  secondary={workflow?.user_id}
-                />
-              </ListItem>
-            </div>
+        <List
+          sx={{
+            width: "100%",
+            maxWidth: 400,
+            mx: "auto"
+          }}
+        >
+          {workflows?.map((workflow) => (
+            <ListItem
+              key={workflow?.id}
+              button
+              onClick={() => handleWorkFlowItem(workflow)}
+              sx={{
+                borderRadius: 2,
+                mb: 1,
+                boxShadow: 1,
+                backgroundColor: "#fff",
+                transition: "0.3s",
+                "&:hover": { backgroundColor: "#f5f5f5" }
+              }}
+            >
+              <ListItemText
+                primary={
+                  <Typography sx={{ fontWeight: "bold" }}>
+                    {workflow?.name}
+                  </Typography>
+                }
+                secondary={workflow?.user_id}
+              />
+            </ListItem>
           ))}
         </List>
       )}
 
-      {/* If there are no workflows */}
+      {/* No Workflows */}
       {!loading && !error && workflows?.length === 0 && (
-        <Typography>No workflows available</Typography>
+        <Typography align="center" color="textSecondary">
+          No workflows available
+        </Typography>
       )}
 
+      {/* Chatbox Popup */}
       {openChatBox && (
-        <div
-          style={{
+        <Paper
+          elevation={3}
+          sx={{
             position: "fixed",
             top: 0,
             right: 0,
-            width: "80vw",
+            width: "75vw",
             height: "100vh",
-            backgroundColor: "white",
-            boxShadow: "-2px 0 10px rgba(0,0,0,0.2)",
-            transform: openChatBox ? "translateX(0)" : "translateX(100%)",
-            transition: "transform 0.5s ease-in-out",
+            backgroundColor: "#ffffff",
+            boxShadow: "-4px 0px 10px rgba(0,0,0,0.2)",
             zIndex: 1000,
-            overflowY: "auto"
+            overflowY: "auto",
+            p: 3
           }}
         >
-          <div
-            style={{
-              paddingLeft: "20px",
-              paddingRight: "20px",
-              paddingBottom: "20px",
-              position: "relative"
-            }}
-          >
-            <Paper
+          {/* Workflow Details */}
+          {selectedWorkflow && (
+            <Box
               sx={{
                 display: "flex",
-                justifyContent: "center",
                 alignItems: "center",
-                py: 2,
-                mb: 3,
-                backgroundColor: "#fff",
-                borderRadius: 2
+                justifyContent: "space-between",
+                mb: 2
               }}
             >
-              <Typography
-                variant="h8"
-                align="center"
-                sx={{ flexGrow: 1, color: "#1976d2" }}
-              >
-                Agent ChatBox for {selectWorkFlows?.name}
-              </Typography>
+              <Box>
+                <Typography variant="body1">
+                  <strong>WorkFlow ID:</strong> {selectedWorkflow.id || "N/A"}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>WorkFlow Type:</strong>{" "}
+                  {selectedWorkflow.type || "N/A"}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>WorkFlow Created At:</strong>{" "}
+                  {selectedWorkflow.created_at
+                    ? new Date(selectedWorkflow.created_at).toLocaleString()
+                    : "N/A"}
+                </Typography>
+              </Box>
 
-              <Box sx={{ mr: 2 }}>
+              {/* Close Button */}
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                 <Button
                   variant="contained"
                   color="primary"
@@ -121,44 +144,14 @@ const WorkFlowsList = ({ refresh }) => {
                   Close
                 </Button>
               </Box>
-            </Paper>
+            </Box>
+          )}
 
-            {/* WorkFlow Details */}
-            {selectWorkFlows ? (
-              <>
-                <Typography
-                  variant="h6"
-                  sx={{ display: "flex", alignItems: "center", mb: 2 }}
-                  color="textSecondary"
-                >
-                  <strong>WorkFlow ID:</strong> {selectWorkFlows.id || "N/A"}
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{ display: "flex", alignItems: "center", mb: 2 }}
-                  color="textSecondary"
-                >
-                  <strong>WorkFlow Type:</strong>{" "}
-                  {selectWorkFlows.type || "N/A"}
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{ display: "flex", alignItems: "center", mb: 2 }}
-                  color="textSecondary"
-                >
-                  <strong>WorkFlow Create at:</strong>{" "}
-                  {new Date(selectWorkFlows.created_at).toLocaleString()}
-                </Typography>
-              </>
-            ) : (
-              <Typography variant="body1">No WorkFlow selected.</Typography>
-            )}
-            {/* Workflow Chat Box Component */}
-            <AgentChatBox agent={selectWorkFlows} />
-          </div>
-        </div>
+          {/* Chat Box */}
+          <AgentChatBox agent={selectedWorkflow} />
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 };
 
