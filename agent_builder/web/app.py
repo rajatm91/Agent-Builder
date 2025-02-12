@@ -19,7 +19,6 @@ from agent_builder.database import DBManager, workflow_from_id
 from agent_builder.utils import init_app_folders, check_and_cast_datetime_fields, md5_hash, test_model
 from loguru import logger
 
-from agent_builder.websocket_manager import run_websocket_server
 
 from agent_builder.chatmanager import ChatManager
 from agent_builder.datamodel import Response, Skill, Model, Message, Session, Workflow, Agent, ContentRequest
