@@ -12,7 +12,6 @@ import {
   Paper,
   Box
 } from "@mui/material";
-// import { Memory as ModelIcon, ExpandLess, ExpandMore } from "@mui/icons-material"; 
 import useAPIResponse from "../hooks/useGetAgentList";
 
 const ModelsList = () => {

@@ -8,10 +8,8 @@ import {
   Alert,
   Button,
   Paper,
-  Box,
-  IconButton
+  Box,  
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import useAPIResponse from "../hooks/useGetAgentList";
 import AgentChatBox from "./AgentChatBox";
 

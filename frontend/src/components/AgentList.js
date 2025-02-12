@@ -119,7 +119,15 @@ const AgentList = ({ onRefresh }) => {
                 >
                   <ListItemText
                     primary={
-                      <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: "bold",
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                          display: "block"
+                        }}
+                      >
                         {agent.config?.name}
                       </Typography>
                     }
@@ -248,7 +256,7 @@ const AgentList = ({ onRefresh }) => {
             />
 
             <TextField
-              label="Customize Prompt"
+              label="Customize Roles and Responsibility"
               name="customize_prompt"
               value={
                 editedAgent?.config?.retrieve_config?.customize_prompt || ""
