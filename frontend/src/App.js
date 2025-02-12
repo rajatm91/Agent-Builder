@@ -62,7 +62,7 @@ const App = () => {
           align="left"
           sx={{ color: "#00796b", fontWeight: 600, flexGrow: 1 }}
         >
-          Agent Generator
+          Agent of Agents
         </Typography>
 
         <Box>
