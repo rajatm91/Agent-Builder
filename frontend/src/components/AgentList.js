@@ -78,13 +78,13 @@ const AgentList = ({ onRefresh }) => {
   const getDialogTitle = (type) => {
     switch (type) {
       case "retrieverproxy":
-        return "Edit Rag Agent";
+        return "Rag Agent";
       case "userproxy":
-        return "Edit User Proxy";
+        return "User Proxy";
       case "assistant":
-        return "Edit Virtual Assistant";
+        return "Virtual Assistant";
       default:
-        return "Edit Agent";
+        return "Agent";
     }
   };
 
@@ -150,50 +150,6 @@ const AgentList = ({ onRefresh }) => {
         </Paper>
       )}
 
-      {/* {!loading && !error && agentsNew?.length > 0 && (
-        <List
-          sx={{
-            backgroundColor: "#f9f9f9",
-            borderRadius: "8px",
-            padding: "10px"
-          }}
-        >
-          {agentsNew?.map((agent) => (
-            <div key={agent?.id}>
-              <ListItem
-                button
-                onClick={() => handleAgentClick(agent)}
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "15px",
-                  "&:hover": { backgroundColor: "#f0f0f0" }
-                }}
-              >                
-
-                <ListItemText
-                  primary={
-                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                      {agent.config?.name }
-                    </Typography>
-                  }
-                  secondary={agent.user_id}
-                />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleEditClick(agent)}
-                >
-                  Edit
-                </Button>
-              </ListItem>
-              <Divider />
-            </div>
-          ))}
-        </List>
-      )} */}
-
       {!loading && !error && agentsNew?.length === 0 && (
         <Typography>No Agents available</Typography>
       )}
@@ -212,7 +168,7 @@ const AgentList = ({ onRefresh }) => {
             padding: "16px"
           }}
         >
-          {getDialogTitle(editedAgent?.type)}
+          Edit Agent
         </DialogTitle>
         <DialogContent>
           <Box sx={{ padding: "20px" }}>
@@ -229,11 +185,12 @@ const AgentList = ({ onRefresh }) => {
               variant="body1"
               sx={{ fontWeight: "bold", marginBottom: "10px" }}
             >
-              Human Input Mode:{" "}
+              Agent Type:{" "}
               <span style={{ fontWeight: "normal" }}>
-                {editedAgent?.config?.human_input_mode || "N/A"}
+              {getDialogTitle(editedAgent?.type)}
               </span>
             </Typography>
+           
             <Typography
               variant="body1"
               sx={{ fontWeight: "bold", marginBottom: "20px" }}
@@ -243,17 +200,6 @@ const AgentList = ({ onRefresh }) => {
                 {editedAgent?.config?.retrieve_config?.docs_path || "N/A"}
               </span>
             </Typography>
-
-            <TextField
-              label="Roles and Responsibility"
-              name="system_message"
-              value={editedAgent?.config?.system_message || ""}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-              multiline
-              minRows={3}
-            />
 
             <TextField
               label="Customize Roles and Responsibility"
@@ -289,6 +235,16 @@ const AgentList = ({ onRefresh }) => {
               </Button>
               <Collapse in={openAdvanced}>
                 <TextField
+                  label="Roles and Responsibility"
+                  name="system_message"
+                  value={editedAgent?.config?.system_message || ""}
+                  onChange={handleChange}
+                  fullWidth
+                  margin="normal"
+                  multiline
+                  minRows={3}
+                />
+                <TextField
                   label="Model"
                   name="model"
                   value={editedAgent?.config?.retrieve_config?.model || ""}
@@ -306,6 +262,15 @@ const AgentList = ({ onRefresh }) => {
                     {editedAgent?.config?.retrieve_config?.task || "N/A"}
                   </span>
                 </Typography>
+                <Typography
+              variant="body1"
+              sx={{ fontWeight: "bold", marginBottom: "10px" }}
+            >
+              Human Input Mode:{" "}
+              <span style={{ fontWeight: "normal" }}>
+                {editedAgent?.config?.human_input_mode || "N/A"}
+              </span>
+            </Typography>
 
                 <Typography
                   variant="body1"

@@ -8,7 +8,7 @@ import {
   Alert,
   Button,
   Paper,
-  Box,  
+  Box,
 } from "@mui/material";
 import useAPIResponse from "../hooks/useGetAgentList";
 import AgentChatBox from "./AgentChatBox";
@@ -51,7 +51,9 @@ const WorkFlowsList = ({ refresh }) => {
           sx={{
             width: "100%",
             maxWidth: 400,
-            mx: "auto"
+            mx: "auto",
+            maxHeight: "80vh",
+            overflowY: "auto",
           }}
         >
           {workflows?.map((workflow) => (
@@ -115,20 +117,11 @@ const WorkFlowsList = ({ refresh }) => {
                 mb: 2
               }}
             >
-              <Box>
-                <Typography variant="body1">
-                  <strong>WorkFlow ID:</strong> {selectedWorkflow.id || "N/A"}
-                </Typography>
+              <Box>               
                 <Typography variant="body1">
                   <strong>WorkFlow Type:</strong>{" "}
-                  {selectedWorkflow.type || "N/A"}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>WorkFlow Created At:</strong>{" "}
-                  {selectedWorkflow.created_at
-                    ? new Date(selectedWorkflow.created_at).toLocaleString()
-                    : "N/A"}
-                </Typography>
+                  {"Two Agents Chat"}
+                </Typography>                
               </Box>
 
               {/* Close Button */}
