@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   List,
   ListItem,
@@ -13,22 +13,30 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  Collapse
 } from "@mui/material";
 import useAPIResponse from "../hooks/useGetAgentList";
-// import axios from "axios";
-// import { mockAgent } from "./mockAgent";
+import apiService from "../api/apiService";
 
-const AgentList = () => {
+const AgentList = ({ onRefresh }) => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [editedAgent, setEditedAgent] = useState(null);
+  const [openAdvanced, setOpenAdvanced] = useState(false); // State for collapsible section
 
   const {
     response: agentsNew,
     loading,
     error
-  } = useAPIResponse("agents", { user_id: "guestuser@gmail.com" });
+  } = useAPIResponse("agents", {
+    user_id: "guestuser@gmail.com",
+    refreshKey: onRefresh
+  });
+
+  useEffect(() => {
+    console.log("Refreshing Agent list because refresh changed.");
+  }, [onRefresh]);
 
   const handleAgentClick = (agent) => {
     setSelectedAgent(
@@ -44,24 +52,56 @@ const AgentList = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setEditedAgent({
-      ...editedAgent,
-      config: {
-        ...editedAgent.config,
-        [name]: value
-      }
-    });
+    if (name === "system_message") {
+      setEditedAgent((prevState) => ({
+        ...prevState,
+        config: {
+          ...prevState.config,
+          [name]: value
+        }
+      }));
+    } else if (
+      name === "customize_prompt" ||
+      name === "customize_answer_prefix" ||
+      name === "model"
+    ) {
+      setEditedAgent((prevState) => ({
+        ...prevState,
+        config: {
+          ...prevState.config,
+          retrieve_config: {
+            ...prevState.config.retrieve_config,
+            [name]: value
+          }
+        }
+      }));
+    }
   };
 
   const handleSubmit = async () => {
-    // try {
-    //   await axios.put(`/api/agents/${editedAgent.id}`, editedAgent); // Adjust API endpoint as necessary
-    //   setOpenModal(false);
-    //   alert("Agent updated successfully");
-    // } catch (err) {
-    //   console.error(err);
-    //   alert("Failed to update agent");
-    // }
+    try {
+      const response = await apiService.post("agents", editedAgent);
+      alert(response?.message || "Agent updated successfully");
+      setOpenModal(false);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update agent");
+    }
+  };
+
+  // Mapping agent.type to dialog title
+  const getDialogTitle = (type) => {
+    switch (type) {
+      case "retrieverproxy":
+        return "Edit Rag Agent";
+      case "userproxy":
+        return "Edit User Proxy";
+      case "assistant":
+        return "Edit Virtual Assistant";
+      default:
+        return "Edit Agent";
+    }
   };
 
   return (
@@ -98,10 +138,15 @@ const AgentList = () => {
       )}
 
       {/* Edit Agent Modal */}
-      <Dialog open={openModal} onClose={() => setOpenModal(false)}>
-        <DialogTitle>Edit Agent</DialogTitle>
+      <Dialog
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>{getDialogTitle(editedAgent?.type)}</DialogTitle>
         <DialogContent>
-          <Box sx={{ padding: "20px", maxWidth: "500px" }}>
+          <Box sx={{ padding: "20px", maxWidth: "80%" }}>
             <Typography variant="body1" marginBottom="20px">
               <strong>Agent Name:</strong> {editedAgent?.config?.name || "N/A"}
             </Typography>
@@ -110,38 +155,17 @@ const AgentList = () => {
               {editedAgent?.config?.human_input_mode || "N/A"}
             </Typography>
             <Typography variant="body1" marginBottom="20px">
-              <strong>Retriever Task:</strong>
-              {editedAgent?.config?.retrieve_config?.task || "N/A"}
-            </Typography>
-            <Typography variant="body1" marginBottom="20px">
-              <strong> RetrieverDocument Path:</strong>
+              <strong>Knowledge Hub:</strong>
               {editedAgent?.config?.retrieve_config?.docs_path || "N/A"}
             </Typography>
-            <Typography variant="body1" marginBottom="20px">
-              <strong> Retriever Vector DB:</strong>
-              {editedAgent?.config?.retrieve_config?.vector_db || "N/A"}
+
+            {/* Editable Fields */}
+            <Typography variant="subtitle1" style={{ fontWeight: "bold" }}>
+              Roles and Responsibility
             </Typography>
-            <Typography variant="body1" marginBottom="20px">
-              <strong>Retriever Connection Name:</strong>
-              {editedAgent?.config?.retrieve_config?.collection_name || "N/A"}
-            </Typography>
-            <Typography variant="body1" marginBottom="20px">
-              <strong> Retriever Connection DB Name:</strong>
-              {editedAgent?.config?.retrieve_config?.db_config
-                ?.connection_string || "N/A"}
-            </Typography>
-            <Typography variant="body1" marginBottom="20px">
-              <strong>Retriever Embedding Model:</strong>
-              {editedAgent?.config?.retrieve_config?.embedding_model || "N/A"}
-            </Typography>
-            <Typography variant="body1" marginBottom="20px">
-              <strong>Retriever Chunk Token Size:</strong>
-              {editedAgent?.config?.retrieve_config?.chunk_token_size || "N/A"}
-            </Typography>
-            {/* System message (allowed to change) */}
             <TextField
-              label="System Message"
-              name="system_message"
+              label="Roles and Responsibility"
+              name="system_message" // Make it Bold
               value={editedAgent?.config?.system_message || ""}
               onChange={handleChange}
               fullWidth
@@ -150,16 +174,10 @@ const AgentList = () => {
               minRows={3}
               maxRows={6}
             />
-            {/* Model (allowed to change) */}
-            <TextField
-              label="Model"
-              name="model"
-              value={editedAgent?.config?.retrieve_config?.model || ""}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-            />
-            {/* Customize Prompt (allowed to change) */}
+
+            <Typography variant="subtitle1" style={{ fontWeight: "bold" }}>
+              Customize Prompt
+            </Typography>
             <TextField
               label="Customize Prompt"
               name="customize_prompt"
@@ -170,7 +188,10 @@ const AgentList = () => {
               fullWidth
               margin="normal"
             />
-            {/* Customize Answer Prefix (allowed to change) */}
+
+            <Typography variant="subtitle1" style={{ fontWeight: "bold" }}>
+              Customize Answer Prefix
+            </Typography>
             <TextField
               label="Customize Answer Prefix"
               name="customize_answer_prefix"
@@ -182,6 +203,42 @@ const AgentList = () => {
               fullWidth
               margin="normal"
             />
+
+            {/* Customizable Fields */}
+            <Box sx={{ marginTop: "20px" }}>
+              <Button
+                onClick={() => setOpenAdvanced(!openAdvanced)}
+                variant="outlined"
+                style={{ marginBottom: 10 }}
+              >
+                {openAdvanced ? "Hide Advanced Topics" : "Show Advanced Topics"}
+              </Button>
+              <Collapse in={openAdvanced}>
+                <Typography variant="body1" marginBottom="20px">
+                  <strong>Retriever Embedding Model:</strong>
+                  {editedAgent?.config?.retrieve_config?.embedding_model ||
+                    "N/A"}
+                </Typography>
+                <Typography variant="body1" marginBottom="20px">
+                  <strong>Retriever Chunk Token Size:</strong>
+                  {editedAgent?.config?.retrieve_config?.chunk_token_size ||
+                    "N/A"}
+                </Typography>
+
+                <TextField
+                  label="Model"
+                  name="model"
+                  value={editedAgent?.config?.retrieve_config?.model || ""}
+                  onChange={handleChange}
+                  fullWidth
+                  margin="normal"
+                />
+                <Typography variant="body1" marginBottom="20px">
+                  <strong>Retriever Task:</strong>
+                  {editedAgent?.config?.retrieve_config?.task || "N/A"}
+                </Typography>
+              </Collapse>
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions>

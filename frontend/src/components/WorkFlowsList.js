@@ -35,9 +35,7 @@ const WorkFlowsList = ({ refresh }) => {
   });
 
   const handleWorkFlowItem = (workflow) => {
-    setSelectedWorkFlows(
-      selectWorkFlows?.id === workflow.id ? null : workflow // Toggle accordion open/close
-    );
+    setSelectedWorkFlows(workflow);
     setOpenChatBox(true);
   };
 
@@ -53,9 +51,12 @@ const WorkFlowsList = ({ refresh }) => {
       {!loading && !error && workflows?.length > 0 && (
         <List>
           {workflows.map((workflow) => (
-            <div  style={{marginLeft:20}} key={workflow?.id}>
-              <ListItem button onClick={() => handleWorkFlowItem(workflow)}>               
-                <ListItemText primary={workflow?.name} secondary={workflow?.user_id}/>
+            <div style={{ marginLeft: 20 }} key={workflow?.id}>
+              <ListItem button onClick={() => handleWorkFlowItem(workflow)}>
+                <ListItemText
+                  primary={workflow?.name}
+                  secondary={workflow?.user_id}
+                />
               </ListItem>
             </div>
           ))}
@@ -107,7 +108,7 @@ const WorkFlowsList = ({ refresh }) => {
                 align="center"
                 sx={{ flexGrow: 1, color: "#1976d2" }}
               >
-                Agent ChatBox for {selectWorkFlows.name}
+                Agent ChatBox for {selectWorkFlows?.name}
               </Typography>
 
               <Box sx={{ mr: 2 }}>

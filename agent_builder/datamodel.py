@@ -145,8 +145,7 @@ class RetrieverConfig(SQLModel, table=False):
     model: Optional[str] = Field(default="gpt-4o")
     get_or_create: bool
     customize_prompt: Optional[str] = None
-    customize_answer_prefix: Optional[str] = None
-    distance_threshold: Optional[float] = None
+    customize_answer_prefix: Optional[str] = None    
 
 
 
