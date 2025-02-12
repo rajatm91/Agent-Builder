@@ -1,6 +1,5 @@
 import React from "react";
 import { Paper, Typography, Box, Button } from "@mui/material";
-// import { Edit, CheckCircle, Cancel } from "@mui/icons-material";
 
 const ReviewDetails = ({
   reviewDetails,
