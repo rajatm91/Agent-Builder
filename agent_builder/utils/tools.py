@@ -138,7 +138,7 @@ def create_retriever_agent(agent_name: str,
             "connection_string": os.environ["AGENT_BUILDER_DB_URI"]
         },
         model = "gpt-4o",
-        get_or_create=True
+        get_or_create=True,
     )
 
     agent_config = AgentConfig(
