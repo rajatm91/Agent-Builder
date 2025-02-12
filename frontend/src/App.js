@@ -17,9 +17,14 @@ const App = () => {
   const [refreshAgent, setRefreshAgent] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openItem, setOpenedItem] = useState("");
+  const [refreshAgentList, setRefreshAgentList] = useState([]);
 
   const handleCreateAgent = (details) => {
     setRefreshAgent(!refreshAgent);
+  };
+
+  const handleRefreshAgentListAfterEdit = () => {
+    setRefreshAgentList(!refreshAgentList);
   };
 
   const openSideBar = (item) => {
@@ -126,7 +131,7 @@ const App = () => {
                 Close
               </Button>
             </Box>
-            <AgentList />
+            <AgentList onRefresh={handleRefreshAgentListAfterEdit} />
           </Box>
         ) : (
           <Box>

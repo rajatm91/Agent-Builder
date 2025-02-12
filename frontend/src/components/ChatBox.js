@@ -26,17 +26,8 @@ const ChatBox = ({ onCreateAgent }) => {
   useEffect(() => {
     let interval;
     if (loading) {
-      const typingMessages = [
-        "Please wait, processing your request...",
-        "The system is generating a response...",
-        "Please wait, gathering the information...",
-        "Almost there, composing the answer..."
-      ];
-      let messageIndex = 0;
-      interval = setInterval(() => {
-        setTypingMessage(typingMessages[messageIndex]);
-        messageIndex = (messageIndex + 1) % typingMessages.length;
-      }, 3000);
+      const typingMessages = "Please wait, Agent is working on your request..."          
+      setTypingMessage(typingMessages);
     } else {
       setTypingMessage(""); // Clear typing message when done
     }
