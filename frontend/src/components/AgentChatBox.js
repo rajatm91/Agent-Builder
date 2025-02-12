@@ -1,18 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  TextField,
-  Button,
-  Box,
-  Typography,  
-  CircularProgress
-} from "@mui/material";
+import { TextField, Button, Box, Typography, CircularProgress, Paper } from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import useWebSocket from "../websocket/useWebSocket";
 
 const AgentChatBox = ({ agent }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const [typingMessage, setTypingMessage] = useState("");
 
   const { socketMessages, sendSocketMessage } = useWebSocket("api/ws");
@@ -45,15 +39,12 @@ const AgentChatBox = ({ agent }) => {
   }, [messages, loading]);
 
   useEffect(() => {
-    let interval;
     if (loading) {
-      const typingMessages = agent?.name + ' is thinking...'
+      const typingMessages = agent?.name + ' is typing...';
       setTypingMessage(typingMessages);
     } else {
       setTypingMessage(""); 
     }
-
-    return () => clearInterval(interval);
   }, [loading]);
 
   // **Send Message via WebSocket**
@@ -88,31 +79,57 @@ const AgentChatBox = ({ agent }) => {
         flexDirection: "column",
         justifyContent: "flex-end",
         width: "98%",
-        maxWidth: "90vw",
-        padding: 2,
-        backgroundColor: "#f4f7fa"
+        maxWidth: "90vw",       
+        borderRadius: 4,
       }}
     >
       {/* Chat Container */}
-      <Box
+      <Paper
         sx={{
           display: "flex",
           flexDirection: "column",
           backgroundColor: "#ffffff",
-          boxShadow: 3,
-          borderRadius: 2,
-          p: 2,
-          height: "60vh",
-          overflow: "hidden"
+          boxShadow: 2,
+          borderRadius: 3,
+          p: 3,
+          height: "78vh",
+          maxHeight: "80vh",
+          overflow: "hidden",
         }}
       >
+        {/* Header */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            borderBottom: "1px solid #ddd",
+            paddingBottom: 1,
+            marginBottom: 2,
+          }}
+        >
+          <Typography
+            variant="h5"
+            color="primary"
+            sx={{
+              fontWeight: 600,
+              fontFamily: "Roboto, sans-serif",
+              fontSize: "1.25rem",
+              letterSpacing: 0.5,
+            }}
+          >
+            Chat with {agent?.name}
+          </Typography>
+        </Box>
+
         {/* Messages Scrollable Area */}
         <Box
           sx={{
             flexGrow: 1,
             overflowY: "auto",
             paddingRight: 1,
-            maxHeight: "calc(100% - 60px)"
+            paddingBottom: 2,
+            maxHeight: "calc(100% - 100px)",
           }}
         >
           {messages.length === 0 ? (
@@ -121,11 +138,11 @@ const AgentChatBox = ({ agent }) => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                height: "100%"
+                height: "100%",
               }}
             >
-              <Typography variant="h6" color="textSecondary">
-                Start chatting by typing a message to {agent?.name} ...
+              <Typography variant="body1" color="textSecondary">
+                Start chatting by typing a message to {agent?.name}...
               </Typography>
             </Box>
           ) : (
@@ -156,9 +173,9 @@ const AgentChatBox = ({ agent }) => {
           sx={{
             display: "flex",
             alignItems: "center",
-            p: 2,
+            padding: "10px 20px",
             borderTop: "1px solid #ddd",
-            backgroundColor: "#ffffff"
+            backgroundColor: "#f9fafb",
           }}
         >
           <TextField
@@ -168,17 +185,38 @@ const AgentChatBox = ({ agent }) => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
+            sx={{
+              borderRadius: 20,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 20,
+                backgroundColor: "#ffffff",
+                paddingRight: "8px",
+              },
+              "& .MuiInputBase-input": {
+                padding: "10px",
+              },
+            }}
           />
           <Button
             variant="contained"
             color="primary"
             onClick={handleSend}
-            sx={{ ml: 2 }}
+            sx={{
+              ml: 2,
+              borderRadius: 20,
+              height: "100%",
+              padding: "10px 20px",
+              fontWeight: 600,
+              boxShadow: "none",
+              "&:hover": {
+                backgroundColor: "#3d8bfd",
+              },
+            }}
           >
             Send
           </Button>
         </Box>
-      </Box>
+      </Paper>
     </Box>
   );
 };
