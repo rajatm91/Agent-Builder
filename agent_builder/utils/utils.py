@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 
@@ -417,3 +418,15 @@ def test_model(model: Model):
         messages=[{"role": "user", "content": "2+2="}], cache_seed=None
     )
     return response.choices[0].message.content
+
+
+
+async def get_cached_response(redis,prompt: str):
+    """Retrieve response from Redis cache"""
+    data =  await redis.get(prompt)
+    return json.loads(data) if data else None
+
+async def cache_response(redis, prompt: str, response: str):
+    """Store response in Redis cache with expiration"""
+    json_val = json.dumps(response)
+    await redis.set(prompt, json_val, ex=3600)

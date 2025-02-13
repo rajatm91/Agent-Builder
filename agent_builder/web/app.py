@@ -2,6 +2,7 @@ import asyncio
 import os
 import queue
 import threading
+import redis.asyncio as redisconn
 import traceback
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -16,14 +17,16 @@ from openai import OpenAIError
 
 from agent_builder.chatmanager import WebSocketConnectionManager
 from agent_builder.database import DBManager, workflow_from_id
-from agent_builder.utils import init_app_folders, check_and_cast_datetime_fields, md5_hash, test_model
+from agent_builder.utils import init_app_folders, check_and_cast_datetime_fields, md5_hash, test_model, cache_response, \
+    get_cached_response
 from loguru import logger
 
 
 from agent_builder.chatmanager import ChatManager
 from agent_builder.datamodel import Response, Skill, Model, Message, Session, Workflow, Agent, ContentRequest
 
-managers = {"chat": None}
+managers = {"chat": None, "user_prompt": ""}
+
 
 message_queue = queue.Queue()
 active_connections = []
@@ -66,10 +69,14 @@ ui_folder_path = Path(__file__).resolve().parent / "ui"
 database_engine_uri = folders["database_engine_uri"]
 dbmanager = DBManager(engine_uri=database_engine_uri)
 
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("***** App started *****")
+    global redis
+    redis = await redisconn.Redis(host=REDIS_HOST, port=6379, decode_responses=True)
+    print("✅ Redis connected!")
     managers["chat"] = ChatManager(message_queue=message_queue)
     dbmanager.create_db_and_tables()
 
@@ -77,6 +84,7 @@ async def lifespan(app: FastAPI):
     yield
     # Close all active connections
     await websocket_manager.disconnect_all()
+    await redis.close()
     print("***** App stopped *****")
 
 
@@ -453,9 +461,19 @@ async def process_socket_message(data: dict, websocket: WebSocket, client_id: st
         user_message = Message(**data["data"])
         session_id = data["data"].get("session_id", None)
         workflow_id = data["data"].get("workflow_id", None)
-        response = await run_session_workflow(
+        managers["user_prompt"] = data['data'].get("content", None)
+        cached_response = await get_cached_response(redis, data['data'].get("content", None))
+        print(f"#### cache response : {cached_response}")
+        if cached_response:
+           response = cached_response
+        else:
+          response = await run_session_workflow(
             message=user_message, session_id=session_id, workflow_id=workflow_id
         )
+          print(f"#### adding cache response : {response}")
+          user_prompt = managers.get("user_prompt", None)
+          if response["data"]["content"]:
+            await cache_response(redis, user_prompt, response)
         response_socket_message = {
             "type": "agent_response",
             "data": response,

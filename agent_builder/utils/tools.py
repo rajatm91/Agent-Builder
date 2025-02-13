@@ -156,7 +156,7 @@ def create_retriever_agent(agent_name: str,
     )
 
     workflow = Workflow(
-        name=f"{agent_name} workflow",
+        name=f"{agent_name}",
         description=f"{agent_name} workflow",
         user_id="guestuser@gmail.com"
     )
