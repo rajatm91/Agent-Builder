@@ -5,9 +5,11 @@ import {
   Box,
   Typography,
   IconButton,
-  CircularProgress,
+  CircularProgress
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
+import PoweredBy from "./PoweredBy";
+import { Send } from "@mui/icons-material";
 
 const ChatBox = ({ onCreateAgent }) => {
   const [message, setMessage] = useState("");
@@ -38,11 +40,11 @@ const ChatBox = ({ onCreateAgent }) => {
       const response = await fetch("http://localhost:8081/api/create_agent", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          content: message,
-        }),
+          content: message
+        })
       });
 
       const data = await response.json();
@@ -53,24 +55,27 @@ const ChatBox = ({ onCreateAgent }) => {
           collection_name: data?.collection_name,
           model: data?.model,
           embedding_model: data?.embedding_model,
-          reason: "Agent successfully created",
+          reason: "Agent successfully created"
         };
         onCreateAgent(agentDetails);
         setMessages((prev) => [
           ...prev,
-          { text: `Agent creation Successfully with name ${data?.name}.`, isUser: false },
+          {
+            text: `Agent creation Successfully with name ${data?.name}.`,
+            isUser: false
+          }
         ]);
       } else {
         setMessages((prev) => [
           ...prev,
-          { text: "Agent creation failed. Please try again.", isUser: false },
+          { text: "Agent creation failed. Please try again.", isUser: false }
         ]);
       }
     } catch (error) {
       console.error("Error creating agent:", error);
       setMessages((prev) => [
         ...prev,
-        { text: "Error occurred while creating agent.", isUser: false },
+        { text: "Error occurred while creating agent.", isUser: false }
       ]);
     } finally {
       setLoading(false);
@@ -91,10 +96,7 @@ const ChatBox = ({ onCreateAgent }) => {
       sx={{
         display: "flex",
         flexDirection: "column",
-        justifyContent: "flex-end",
-        width: "100%",
-        maxWidth: "100vw",       
-        fontFamily: "'Roboto', sans-serif", // Updated font
+        height: "100%"
       }}
     >
       {/* Chat Container */}
@@ -102,13 +104,7 @@ const ChatBox = ({ onCreateAgent }) => {
         sx={{
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#ffffff",
-          boxShadow: 3,
-          borderRadius: 2,
-          p: 2,
-          height: "80vh",
-          overflow: "hidden",
-          border: "1px solid #ddd", // Added subtle border
+          flexGrow: 1 // Allow the chat box to grow
         }}
       >
         {/* Messages Scrollable Area */}
@@ -117,7 +113,7 @@ const ChatBox = ({ onCreateAgent }) => {
             flexGrow: 1,
             overflowY: "auto",
             paddingRight: 1,
-            maxHeight: "calc(100% - 80px)",
+            maxHeight: "calc(100% - 80px)"
           }}
         >
           {messages.length === 0 ? (
@@ -126,7 +122,7 @@ const ChatBox = ({ onCreateAgent }) => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                height: "100%",
+                height: "100%"
               }}
             >
               <Typography variant="h6" color="textSecondary">
@@ -135,7 +131,11 @@ const ChatBox = ({ onCreateAgent }) => {
             </Box>
           ) : (
             messages.map((msg, index) => (
-              <MessageBubble key={index} message={msg.text} isUser={msg.isUser} />
+              <MessageBubble
+                key={index}
+                message={msg.text}
+                isUser={msg.isUser}
+              />
             ))
           )}
 
@@ -146,7 +146,11 @@ const ChatBox = ({ onCreateAgent }) => {
         {loading && (
           <Box sx={{ display: "flex", alignItems: "center", marginTop: 1 }}>
             <CircularProgress size={16} sx={{ marginRight: 1 }} />
-            <Typography variant="body2" color="textSecondary" sx={{ fontWeight: 500 }}>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{ fontWeight: 500 }}
+            >
               {typingMessage}
             </Typography>
           </Box>
@@ -161,14 +165,11 @@ const ChatBox = ({ onCreateAgent }) => {
             borderTop: "1px solid #ddd",
             backgroundColor: "#ffffff",
             boxShadow: "inset 0 -1px 0 rgba(0, 0, 0, 0.1)", // Added subtle shadow
+            flexShrink: 0
           }}
         >
-          <IconButton color="primary">
-            {/* <Mic /> */}
-          </IconButton>
-          <IconButton color="primary">
-            {/* <AttachFile /> */}
-          </IconButton>
+          <IconButton color="primary">{/* <Mic /> */}</IconButton>
+          <IconButton color="primary">{/* <AttachFile /> */}</IconButton>
           <TextField
             fullWidth
             variant="outlined"
@@ -178,29 +179,31 @@ const ChatBox = ({ onCreateAgent }) => {
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
             sx={{
               borderRadius: 2, // Rounded corners for the input box
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                  borderColor: "#ddd", // Subtle border for input
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#ddd" // Subtle border for input
                 },
-                '&:hover fieldset': {
-                  borderColor: "#1976d2", // Highlight border color on focus
-                },
-              },
+                "&:hover fieldset": {
+                  borderColor: "#1976d2" // Highlight border color on focus
+                }
+              }
             }}
           />
           <Button
             variant="contained"
             color="primary"
+            startIcon={<Send />}
             onClick={handleSend}
             sx={{
               ml: 2,
               textTransform: "none", // Prevent text capitalization in button
-              padding: "8px 16px",
+              padding: "8px 16px"
             }}
           >
             Send
           </Button>
         </Box>
+        <PoweredBy />
       </Box>
     </Box>
   );

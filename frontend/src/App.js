@@ -1,13 +1,25 @@
+
 import React, { useState } from "react";
 import {
   Box,
-  Grid,
-  Typography,
-  Paper,
-  Drawer,
   Button,
+  Paper,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
   Divider
 } from "@mui/material";
+import {
+  Dashboard as DashboardIcon,
+  Build as BuildIcon,
+  SportsEsports as PlaygroundIcon,
+  ExpandMore as ExpandMoreIcon,
+  Folder as FolderIcon,
+  Group,
+  Memory,
+  AccountTree
+} from "@mui/icons-material";
 import ChatBox from "./components/ChatBox";
 import AgentList from "./components/AgentList";
 import WorkFlowsList from "./components/WorkFlowsList";
@@ -18,6 +30,8 @@ const App = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [openItem, setOpenedItem] = useState("");
   const [refreshAgentList, setRefreshAgentList] = useState([]);
+  const [selectedTab, setSelectedTab] = useState("Build");
+  const [expanded, setExpanded] = useState(false);
 
   const handleCreateAgent = (details) => {
     setRefreshAgent(!refreshAgent);
@@ -32,141 +46,150 @@ const App = () => {
     setSidebarOpen(true);
   };
 
+  const handleChange = (panel) => (event, isExpanded) => {
+    setExpanded(isExpanded ? panel : false);
+  };
+
   return (
-    <Box
-      sx={{
-        width: "100vw",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "linear-gradient(135deg, #e0f7fa, #80deea)",
-        fontFamily: '"Roboto", sans-serif'
-      }}
-    >
-      {/* Header Section with Icons and Title */}
+    <Box sx={{ display: "flex", height: "100vh", flexDirection: "column" }}>
+      {/* Header Section */}
       <Paper
         sx={{
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          py: 2,
-          px: 4,
-          mb: 3,
+          padding: "16px 32px",
           backgroundColor: "#ffffff",
-          borderRadius: 2,
           boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)"
         }}
       >
-        <Typography
-          variant="h4"
-          align="left"
-          sx={{ color: "#00796b", fontWeight: 600, flexGrow: 1 }}
-        >
-          Agent of Agents
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
+          <DashboardIcon sx={{ color: "#1976d2", mr: 1 }} />
+          <Typography variant="h6">Agent of Agents</Typography>
+        </Box>
 
         <Box>
           <Button
-            variant="contained"
+            variant={selectedTab === "Build" ? "contained" : "outlined"}
             color="primary"
-            onClick={() => openSideBar("model")}
-            sx={{ ml: 2, textTransform: "capitalize", borderRadius: 2 }}
+            startIcon={<BuildIcon />}
+            onClick={() => setSelectedTab("Build")}
+            sx={{ mx: 1, textTransform: "capitalize" }}
           >
-            Models List
+            Build
           </Button>
           <Button
-            variant="contained"
-            color="primary"
-            onClick={() => openSideBar("workflows")}
-            sx={{ ml: 2, textTransform: "capitalize", borderRadius: 2 }}
+            variant={selectedTab === "Playground" ? "contained" : "outlined"}
+            color="secondary"
+            startIcon={<PlaygroundIcon />}
+            onClick={() => setSelectedTab("Playground")}
+            sx={{ mx: 1, textTransform: "capitalize" }}
           >
-            Agents List
+            Playground
           </Button>
         </Box>
       </Paper>
 
-      {/* Main Content Section */}
-      <Box sx={{ flex: 1, overflow: "auto", px: 4, pb: 4 }}>
-        <Grid container spacing={3} sx={{ height: "100%" }}>
-          {/* ChatBox Section */}
-          <Grid item xs={12} md={9}>
-            <ChatBox onCreateAgent={handleCreateAgent} />
-          </Grid>
-          {/* Agent List Section */}
-          <Grid item xs={12} md={3}>
-            <WorkFlowsList refresh={refreshAgent} />
-          </Grid>
-        </Grid>
-      </Box>
-
-      {/* Sidebar for Workflow & Models List */}
-      <Drawer
-        anchor="left"
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+      <Box
         sx={{
-          "& .MuiDrawer-paper": {
-            width: "320px",
-            padding: "24px",
-            background: "#ffffff",
-            boxShadow: "2px 0 10px rgba(0,0,0,0.2)",
-            borderRadius: "8px"
-          }
+          height: "1px",
+          backgroundColor: "rgba(0, 0, 0, 0.1)",
+          width: "100%"
         }}
-      >
-        {/* Workflow Sidebar Header */}
-        {openItem === "workflows" ? (
-          <Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 3
-              }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 500, color: "#00796b" }}>
-                Agents
-              </Typography>
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => setSidebarOpen(false)}
-                sx={{ borderRadius: 2 }}
+      />
+
+      {/* Main Content */}
+      <Box sx={{ display: "flex", flex: 1 }}>
+        {/* Left Panel */}
+        <Box
+          sx={{
+            backgroundColor: "#f5f5f5",
+            boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
+            p: 2
+          }}
+        >
+          {selectedTab === "Build" && (
+            <>
+              <Accordion
+                expanded={expanded === "agents"}
+                onChange={handleChange("agents")}
               >
-                Close
-              </Button>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <AgentList onRefresh={handleRefreshAgentListAfterEdit} />
-          </Box>
-        ) : (
-          <Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 3
-              }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 500, color: "#00796b" }}>
-                Models
-              </Typography>
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => setSidebarOpen(false)}
-                sx={{ borderRadius: 2 }}
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  id="agents-header"
+                >
+                  <Group sx={{ mr: 1, color: "#1565c0" }} />
+                  <Typography>Agents</Typography>
+                </AccordionSummary>
+                <Divider sx={{ width: "100%" }} />
+                <AccordionDetails>
+                  <AgentList onRefresh={handleRefreshAgentListAfterEdit} />
+                </AccordionDetails>
+              </Accordion>
+
+              <Accordion
+                expanded={expanded === "models"}
+                onChange={handleChange("models")}
               >
-                Close
-              </Button>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <ModelsList />
-          </Box>
-        )}
-      </Drawer>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  id="models-header"
+                >
+                  <Memory sx={{ mr: 1, color: "#1565c0" }} />
+                  <Typography>Models</Typography>
+                </AccordionSummary>
+                <Divider sx={{ width: "100%" }} />
+                <AccordionDetails>
+                  <ModelsList />
+                </AccordionDetails>
+              </Accordion>
+
+              <Accordion
+                expanded={expanded === "workflows"}
+                onChange={handleChange("workflows")}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  id="workflows-header"
+                >
+                  <AccountTree sx={{ mr: 1, color: "#1565c0" }} />
+                  <Typography>Workflows</Typography>
+                </AccordionSummary>
+                <Divider sx={{ width: "100%" }} />
+                <AccordionDetails>
+                  <WorkFlowsList refresh={refreshAgent} />
+                </AccordionDetails>
+              </Accordion>
+            </>
+          )}
+          {selectedTab === "Playground" && (
+            <Accordion
+              expanded={expanded === "workflows"}
+              onChange={handleChange("workflows")}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                id="workflows-header"
+              >
+                <AccountTree sx={{ mr: 1, color: "#1565c0" }} />
+                <Typography>Workflows</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <WorkFlowsList />
+              </AccordionDetails>
+            </Accordion>
+          )}
+        </Box>
+
+        {/* Vertical Separator */}
+        <Box sx={{ width: "1px", backgroundColor: "rgba(0, 0, 0, 0.1)" }} />
+
+        {/* Right Panel (ChatBox) */}
+        <Box sx={{ flex: 1 }}>
+          {selectedTab === "Build" && (
+            <ChatBox onCreateAgent={handleCreateAgent} />
+          )}
+        </Box>
+      </Box>
     </Box>
   );
 };

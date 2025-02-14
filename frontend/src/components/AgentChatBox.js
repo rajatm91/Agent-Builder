@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { TextField, Button, Box, Typography, CircularProgress, Paper } from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import useWebSocket from "../websocket/useWebSocket";
+import { Send, Person } from "@mui/icons-material";
 
 const AgentChatBox = ({ agent }) => {
   const [message, setMessage] = useState("");
@@ -12,13 +13,13 @@ const AgentChatBox = ({ agent }) => {
   const { socketMessages, sendSocketMessage } = useWebSocket("api/ws");
   const messagesEndRef = useRef(null);
 
-  // **Process WebSocket Messages and Update UI**
+  // Process WebSocket Messages and Update UI
   useEffect(() => {
     if (socketMessages.length > 0) {
       const lastMessage = socketMessages[socketMessages.length - 1];
       if (lastMessage?.type === "agent_response") {
         const messageContent = lastMessage?.data?.data?.content;
-        
+
         if (messageContent) {
           setMessages((prev) => [
             ...prev,
@@ -33,7 +34,7 @@ const AgentChatBox = ({ agent }) => {
     }
   }, [socketMessages]);
 
-  // **Auto-scroll when new message arrives**
+  // Auto-scroll when new message arrives
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
@@ -47,7 +48,7 @@ const AgentChatBox = ({ agent }) => {
     }
   }, [loading]);
 
-  // **Send Message via WebSocket**
+  // Send Message via WebSocket
   const handleSend = () => {
     if (message.trim()) {
       setMessages((prev) => [...prev, { text: message, isUser: true }]);
@@ -108,6 +109,7 @@ const AgentChatBox = ({ agent }) => {
             marginBottom: 2,
           }}
         >
+          <Person color="primary" sx={{ marginRight: 1 }} /> {/* Agent Icon */}
           <Typography
             variant="h5"
             color="primary"
@@ -213,6 +215,7 @@ const AgentChatBox = ({ agent }) => {
               },
             }}
           >
+            <Send sx={{ marginRight: 1 }} /> {/* Send Icon */}
             Send
           </Button>
         </Box>

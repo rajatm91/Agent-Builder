@@ -15,10 +15,22 @@ import {
   DialogContent,
   DialogActions,
   Collapse,
-  Paper
+  IconButton,
+  ListItemIcon
 } from "@mui/material";
 import useAPIResponse from "../hooks/useGetAgentList";
 import apiService from "../api/apiService";
+import {
+  Edit,
+  Engineering,  
+  Assignment,
+  HelpOutline,
+  FileCopy,
+  ExpandLess,
+  ExpandMore,
+  Cancel,
+  Save
+} from "@mui/icons-material";
 
 const AgentList = ({ onRefresh }) => {
   const [selectedAgent, setSelectedAgent] = useState(null);
@@ -89,65 +101,71 @@ const AgentList = ({ onRefresh }) => {
   };
 
   return (
-    <Box sx={{ padding: "4px", maxWidth: "800px", margin: "auto" }}>
+    <Box>
       {loading && <CircularProgress />}
       {error && <Alert severity="error">{error}</Alert>}
 
       {!loading && !error && agentsNew?.length > 0 && (
-        <Paper elevation={3} sx={{ borderRadius: 2, p: 2 }}>
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: "bold", textAlign: "center", mb: 2 }}
-            color="primary"
-          >
-            Available Agents
-          </Typography>
-          <List>
-            {agentsNew?.map((agent) => (
-              <Box key={agent.id}>
-                {/* Agent List Item */}
-                <ListItem
-                  button
-                  onClick={() => handleAgentClick(agent)}
+        <List>
+          {agentsNew?.map((agent) => (
+            <Box key={agent.id}>
+              {/* Agent List Item */}
+              <ListItem
+                button
+                onClick={() => handleAgentClick(agent)}
+                sx={{
+                  "&:hover": { backgroundColor: "#f0f0f0" }
+                }}
+              >
+                {/* Icon */}
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  <Engineering color="action" />
+                </ListItemIcon>
+
+                {/* Text Content */}
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontWeight: "bold",
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        display: "block"
+                      }}
+                    >
+                      {agent.config?.name}
+                    </Typography>
+                  }
+                  secondary={agent.user_id}
+                />
+
+                {/* Edit Button */}
+                <Box
                   sx={{
+                    minWidth: 50,
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "12px",
-                    "&:hover": { backgroundColor: "#f0f0f0" }
+                    justifyContent: "flex-end"
                   }}
                 >
-                  <ListItemText
-                    primary={
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          fontWeight: "bold",
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                          display: "block"
-                        }}
-                      >
-                        {agent.config?.name}
-                      </Typography>
-                    }
-                    secondary={agent.user_id}
-                  />
-                  <Button
-                    variant="contained"
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditClick(agent);
+                    }}
                     color="primary"
-                    onClick={() => handleEditClick(agent)}
+                    sx={{ marginLeft: "8px" }}
                   >
-                    Edit
-                  </Button>
-                </ListItem>
+                    <Edit />
+                  </IconButton>
+                </Box>
+              </ListItem>
 
-                {/* Divider */}
-                <Divider />
-              </Box>
-            ))}
-          </List>
-        </Paper>
+              {/* Divider */}
+              <Divider />
+            </Box>
+          ))}
+        </List>
       )}
 
       {!loading && !error && agentsNew?.length === 0 && (
@@ -165,7 +183,8 @@ const AgentList = ({ onRefresh }) => {
           sx={{
             fontWeight: "bold",
             backgroundColor: "#f5f5f5",
-            padding: "16px"
+            alignItems:'center',            
+            justifyContent:'center',
           }}
         >
           Edit Agent
@@ -187,10 +206,10 @@ const AgentList = ({ onRefresh }) => {
             >
               Agent Type:{" "}
               <span style={{ fontWeight: "normal" }}>
-              {getDialogTitle(editedAgent?.type)}
+                {getDialogTitle(editedAgent?.type)}
               </span>
             </Typography>
-           
+
             <Typography
               variant="body1"
               sx={{ fontWeight: "bold", marginBottom: "20px" }}
@@ -210,6 +229,11 @@ const AgentList = ({ onRefresh }) => {
               onChange={handleChange}
               fullWidth
               margin="normal"
+              InputProps={{
+                startAdornment: (
+                  <Assignment sx={{ color: "gray", marginRight: 1 }} />
+                )
+              }}
             />
 
             <TextField
@@ -222,6 +246,11 @@ const AgentList = ({ onRefresh }) => {
               onChange={handleChange}
               fullWidth
               margin="normal"
+              InputProps={{
+                startAdornment: (
+                  <HelpOutline sx={{ color: "gray", marginRight: 1 }} />
+                )
+              }}
             />
 
             {/* Advanced Options */}
@@ -230,6 +259,7 @@ const AgentList = ({ onRefresh }) => {
                 onClick={() => setOpenAdvanced(!openAdvanced)}
                 variant="outlined"
                 sx={{ width: "100%", marginBottom: "10px" }}
+                startIcon={openAdvanced ? <ExpandLess /> : <ExpandMore />}
               >
                 {openAdvanced ? "Hide Advanced Topics" : "Show Advanced Topics"}
               </Button>
@@ -243,6 +273,11 @@ const AgentList = ({ onRefresh }) => {
                   margin="normal"
                   multiline
                   minRows={3}
+                  InputProps={{
+                    startAdornment: (
+                      <Assignment sx={{ color: "gray", marginRight: 1 }} />
+                    )
+                  }}
                 />
                 <TextField
                   label="Model"
@@ -251,6 +286,11 @@ const AgentList = ({ onRefresh }) => {
                   onChange={handleChange}
                   fullWidth
                   margin="normal"
+                  InputProps={{
+                    startAdornment: (
+                      <FileCopy sx={{ color: "gray", marginRight: 1 }} />
+                    )
+                  }}
                 />
 
                 <Typography
@@ -262,15 +302,16 @@ const AgentList = ({ onRefresh }) => {
                     {editedAgent?.config?.retrieve_config?.task || "N/A"}
                   </span>
                 </Typography>
+
                 <Typography
-              variant="body1"
-              sx={{ fontWeight: "bold", marginBottom: "10px" }}
-            >
-              Human Input Mode:{" "}
-              <span style={{ fontWeight: "normal" }}>
-                {editedAgent?.config?.human_input_mode || "N/A"}
-              </span>
-            </Typography>
+                  variant="body1"
+                  sx={{ fontWeight: "bold", marginBottom: "10px" }}
+                >
+                  Human Input Mode:{" "}
+                  <span style={{ fontWeight: "normal" }}>
+                    {editedAgent?.config?.human_input_mode || "N/A"}
+                  </span>
+                </Typography>
 
                 <Typography
                   variant="body1"
@@ -298,10 +339,19 @@ const AgentList = ({ onRefresh }) => {
           </Box>
         </DialogContent>
         <DialogActions sx={{ padding: "16px", backgroundColor: "#f5f5f5" }}>
-          <Button onClick={() => setOpenModal(false)} color="secondary">
+          <Button
+            startIcon={<Cancel />}
+            onClick={() => setOpenModal(false)}
+            color="secondary"
+          >
             Cancel
           </Button>
-          <Button onClick={handleSubmit} color="primary" variant="contained">
+          <Button
+            startIcon={<Save />}
+            onClick={handleSubmit}
+            color="primary"
+            variant="contained"
+          >
             Submit
           </Button>
         </DialogActions>
