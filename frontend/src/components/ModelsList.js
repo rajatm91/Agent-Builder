@@ -14,7 +14,7 @@ import {
   ListItemIcon
 } from "@mui/material";
 import useAPIResponse from "../hooks/useGetAgentList";
-import { Assistant, ExpandMore, ExpandLess } from "@mui/icons-material"; // Import the icons
+import { Assistant, ExpandMore, ExpandLess, Memory } from "@mui/icons-material"; // Import the icons
 
 const ModelsList = () => {
   const [selectedModel, setSelectedModel] = useState(null);
@@ -58,7 +58,7 @@ const ModelsList = () => {
               >
                 {/* Icon */}
                 <ListItemIcon sx={{ minWidth: 40 }}>
-                  <Assistant color="action" />
+                  <Memory color="action" />
                 </ListItemIcon>
                 <ListItemText
                   primary={

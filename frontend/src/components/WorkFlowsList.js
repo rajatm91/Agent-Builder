@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import useAPIResponse from "../hooks/useGetAgentList";
 import AgentChatBox from "./AgentChatBox";
-import { Close, Work } from "@mui/icons-material";
+import { AccountTree, Close, Work } from "@mui/icons-material";
 import ImageDisplay from "./ImageDisplay";
 import VerticalFlow from "../assets/images/VerticalFlow.png";
 
@@ -67,7 +67,7 @@ const WorkFlowsList = ({ refresh }) => {
               onClick={() => handleWorkFlowItem(workflow)}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>
-                <Work color="action" />
+                <AccountTree color="action" />
               </ListItemIcon>
               <ListItemText
                 primary={

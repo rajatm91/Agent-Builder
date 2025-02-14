@@ -29,7 +29,8 @@ import {
   ExpandLess,
   ExpandMore,
   Cancel,
-  Save
+  Save,
+  Group
 } from "@mui/icons-material";
 
 const AgentList = ({ onRefresh }) => {
@@ -119,7 +120,7 @@ const AgentList = ({ onRefresh }) => {
               >
                 {/* Icon */}
                 <ListItemIcon sx={{ minWidth: 40 }}>
-                  <Engineering color="action" />
+                  <Group color="action" />
                 </ListItemIcon>
 
                 {/* Text Content */}

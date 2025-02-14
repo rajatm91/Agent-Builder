@@ -7,28 +7,68 @@ const MessageBubble = ({ message, isUser }) => {
   return (
     <Box
       sx={{
-        padding:2,
-        display: "flex", 
+        display: "flex",
         alignItems: "center",
         justifyContent: isUser ? "flex-end" : "flex-start",
-        mb: 1, 
+        mb: 2, // Increased margin for better spacing
+        width: "100%",
       }}
-    >      
-      {!isUser && <SmartToy sx={{ mr: 1, color: "#1976d2" }} />}
+    >
+      {/* Bot Icon (Left Side) */}
+      {!isUser && (
+        <SmartToy
+          sx={{
+            mr: 1.5,
+            color: "#1976d2",
+            fontSize: "28px",
+            backgroundColor: "#f0f4f9",
+            borderRadius: "50%",
+            padding: "6px",
+          }}
+        />
+      )}
 
+      {/* Message Bubble */}
       <Box
         sx={{
-          backgroundColor: isUser ? "#1976d2" : "#e0e0e0",
-          color: isUser ? "#fff" : "#000", 
-          padding: "10px", 
-          borderRadius: "10px",
-          maxWidth: "70%", 
+          backgroundColor: isUser ? "#1976d2" : "#f0f4f9",
+          color: isUser ? "#fff" : "#000",
+          padding: "12px 16px",
+          borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px", // Rounded corners based on user/bot
+          maxWidth: "70%",
           wordBreak: "break-word",
+          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
+          transition: "transform 0.2s ease-in-out", // Smooth hover effect
+          "&:hover": {
+            transform: "scale(1.02)", // Slight zoom on hover
+          },
         }}
       >
-        <Typography component="div">{formatMessage(message)}</Typography>
-      </Box>            
-      {isUser && <Person sx={{ ml: 1, color: "#1976d2" }} />}
+        <Typography
+          variant="body1"
+          sx={{
+            fontSize: "14px",
+            lineHeight: "1.5",
+            fontWeight: isUser ? 500 : 400,
+          }}
+        >
+          {formatMessage(message)}
+        </Typography>
+      </Box>
+
+      {/* User Icon (Right Side) */}
+      {isUser && (
+        <Person
+          sx={{
+            ml: 1.5,
+            color: "#1976d2",
+            fontSize: "28px",
+            backgroundColor: "#f0f4f9",
+            borderRadius: "50%",
+            padding: "6px",
+          }}
+        />
+      )}
     </Box>
   );
 };

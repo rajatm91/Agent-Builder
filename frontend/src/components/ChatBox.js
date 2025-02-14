@@ -5,7 +5,8 @@ import {
   Box,
   Typography,
   IconButton,
-  CircularProgress
+  CircularProgress,
+  Paper
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import PoweredBy from "./PoweredBy";
@@ -96,7 +97,10 @@ const ChatBox = ({ onCreateAgent }) => {
       sx={{
         display: "flex",
         flexDirection: "column",
-        height: "100%"
+        height: "100%",
+        backgroundColor: "#f9fafb",
+        borderRadius: 2,
+        overflow: "hidden"
       }}
     >
       {/* Chat Container */}
@@ -104,7 +108,8 @@ const ChatBox = ({ onCreateAgent }) => {
         sx={{
           display: "flex",
           flexDirection: "column",
-          flexGrow: 1 // Allow the chat box to grow
+          flexGrow: 1,
+          overflow: "hidden"
         }}
       >
         {/* Messages Scrollable Area */}
@@ -112,8 +117,12 @@ const ChatBox = ({ onCreateAgent }) => {
           sx={{
             flexGrow: 1,
             overflowY: "auto",
-            paddingRight: 1,
-            maxHeight: "calc(100% - 80px)"
+            padding: 2,
+            backgroundColor: "#ffffff",
+            borderRadius: 2,
+            margin: 2,
+            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+            maxHeight: "calc(100vh - 320px)" // Adjust as needed to fit within screen height
           }}
         >
           {messages.length === 0 ? (
@@ -144,7 +153,14 @@ const ChatBox = ({ onCreateAgent }) => {
 
         {/* Show "Bot is typing..." message */}
         {loading && (
-          <Box sx={{ display: "flex", alignItems: "center", marginTop: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              marginTop: 1,
+              paddingLeft: 2
+            }}
+          >
             <CircularProgress size={16} sx={{ marginRight: 1 }} />
             <Typography
               variant="body2"
@@ -157,19 +173,17 @@ const ChatBox = ({ onCreateAgent }) => {
         )}
 
         {/* Chat Input */}
-        <Box
+        <Paper
           sx={{
             display: "flex",
             alignItems: "center",
             p: 2,
             borderTop: "1px solid #ddd",
             backgroundColor: "#ffffff",
-            boxShadow: "inset 0 -1px 0 rgba(0, 0, 0, 0.1)", // Added subtle shadow
-            flexShrink: 0
+            boxShadow: "0px -2px 4px rgba(0, 0, 0, 0.1)",
+            borderRadius: 0
           }}
         >
-          <IconButton color="primary">{/* <Mic /> */}</IconButton>
-          <IconButton color="primary">{/* <AttachFile /> */}</IconButton>
           <TextField
             fullWidth
             variant="outlined"
@@ -178,13 +192,13 @@ const ChatBox = ({ onCreateAgent }) => {
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
             sx={{
-              borderRadius: 2, // Rounded corners for the input box
+              borderRadius: 2,
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#ddd" // Subtle border for input
+                  borderColor: "#ddd"
                 },
                 "&:hover fieldset": {
-                  borderColor: "#1976d2" // Highlight border color on focus
+                  borderColor: "#1976d2"
                 }
               }
             }}
@@ -196,15 +210,22 @@ const ChatBox = ({ onCreateAgent }) => {
             onClick={handleSend}
             sx={{
               ml: 2,
-              textTransform: "none", // Prevent text capitalization in button
-              padding: "8px 16px"
+              textTransform: "none",
+              padding: "8px 16px",
+              borderRadius: 2,
+              boxShadow: "none",
+              "&:hover": {
+                backgroundColor: "#1565c0"
+              }
             }}
           >
             Send
           </Button>
-        </Box>
-        <PoweredBy />
+        </Paper>
       </Box>
+
+      {/* Powered By Section */}
+      <PoweredBy />
     </Box>
   );
 };
