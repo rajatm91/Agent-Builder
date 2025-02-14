@@ -1,13 +1,13 @@
 import json
 import os
 from fastapi import HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 import openai
-from typing import Union, List
+from typing import Union, List, Literal, Optional, Self
 from sqlmodel import Session
 from agent_builder.database.database_manager import DBManager
 from agent_builder.datamodel import RetrieverConfig, AgentConfig, CodeExecutionConfigTypes, Agent, AgentType, Workflow, \
-    Model
+    Model, AgentClassification
 from dotenv import load_dotenv
 
 
@@ -16,101 +16,166 @@ load_dotenv()
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-class StructureOutput(BaseModel):
+class FurtherQuestion(BaseModel):
+    missing_details : list[str]
+    agent_name: Optional[str]
+    knowledge_hub: Optional[str]
+    next_question: str
+
+class SuccessfulResponse(BaseModel):
     agent_name: str
-    docs_path: str
-    model_name: str
+    knowledge_hub:str
+    llm_model: str
+
+class ResponseFormat(BaseModel):
+    status: Literal["final_confirmation","further_question"]
+    content: Optional[SuccessfulResponse]
+    further_question : Optional[FurtherQuestion]
+
+    @model_validator(mode='after')
+    def check_conditional_field(self) -> Self:
+        if self.further_question == 'final_confirmation' and not self.content:
+            raise ValueError("For status final_confirmation, content is mandatory")
+        elif self.further_question == 'further_question' and not self.further_question:
+            raise ValueError("For status further_question, further_question is mandatory")
+
+        return self
 
 
 
 
-def extract_parameters(content: str):
-    """Calls OpenAI to extract agent_name, docs_path, and model_name from the input content."""
-    try:
-        prompt = ("""
-            You are an AI assistant that extracts structured information from user-provided text.
-            Your task is to identify and return a JSON object with the following keys:
-            - `agent_name`: The name of the agent mentioned in the text (if present).
-            - `docs_path`: The file path(s) where documents are stored **or** a website URL (if present). If a website URL is provided **without 'https://', ensure it is appended automatically**.
-            - `model_name`: The AI model mentioned in the text (default to 'gpt-4o' if none is explicitly stated).
-            If `docs_path` contains a **directory path**, return it as is.
-            If a **website URL** is provided instead, return the URL in `docs_path`, ensuring that it starts with 'https://'.
-            ### **Examples:**
-            #### Example 1: Directory Path
-            **Input:**
-            I want to create agent BOTCSearch. Files are stored at /Users/rajatmishra/development/test_documents and want to use gpt-4o model for RAG.
-            **Output:**
-            {
-                "agent_name: "BOTCSearch",
-                "docs_path: "/Users/rajatmishra/development/test_documents",
-                "model_name: "gpt-4o"
-            }
-            #### Example 2: Directory Path with a Different Model
-            **Input:**
-            "Create an agent named SearchBot using the files at /mnt/data/documents and run it with gpt-3.5-turbo."
-            **Output:**
-            {
-              "agent_name": SearchBot",
-              "docs_path": "/mnt/data/documents",
-              "model_name": "gpt-3.5-turbo"
-            }
-            #### Example 3: Website URL Instead of Directory Path
-            **Input:**
-            "Build an agent called WebCrawler that processes documents from example.com/articles."
-            **Output:**
-            {
-              "agent_name": "WebCrawler",
-              "docs_path": "https://example.com/articles",
-              "model_name": "gpt-4o"
-            }
-            #### Example 4: Another Directory Path with Default Model
-            **Input:**
-            Make a new agent IndexMaster. It should scan /var/lib/files for processing."
-            **Output:**
-            {
-              "agent_name": "IndexMaster",
-              "docs_path": "/var/lib/files",
-              "model_name": "gpt-4o"
-            }
-            "#### Example 5: Website URL with Missing 'https://'
-            "**Input:**
-            ""Create an agent named NewsScraper to gather articles from newswebsite.com/latest."
-            "**Output:**
-            "{
-            "  "agent_name": "NewsScraper",
-            "  "docs_path": "https://newswebsite.com/latest",
-            "  "model_name": "gpt-4o"
-            }
-            **Now, extract the correct information from the following input:**
-            **Input:** '{content}'
-            **Output (in JSON format):**
-            """
-        )
 
-        response = client.beta.chat.completions.parse(
-            model="gpt-4o",
-            messages=[
-                {"role": "system","content": prompt},
-                {"role": "user", "content": content}
-            ],
-            temperature=0,
-            response_format=StructureOutput,
+def initialize_conversation_state():
+    """Initialize/reset the conversation state for a new agent."""
+    return {
+        "agent_name": None,
+        "knowledge_hub": None,
+        "llm_model": "gpt-4o",  # Default value
+    }
 
-        )
 
-        extracted_text = response.choices[0].message.content
-        extracted_data = json.loads(extracted_text)  # Ensure the response is valid JSON
+def generate_prompt(conversation_state):
+    """Generate a structured prompt based on missing details."""
+    missing_details = [key for key, value in conversation_state.items() if value is None]
 
+    if not missing_details:
         return {
-            "agent_name": extracted_data.get("agent_name", "Unknown"),
-            "docs_path": extracted_data.get("docs_path", []),
-            "model_name": extracted_data.get("model_name", "gpt-4o"),
+            "status": "final_confirmation",
+            **conversation_state
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+
+    next_question = ""
+
+    if "agent_name" in missing_details:
+        next_question = "What would you like to name your agent?"
+    elif "knowledge_hub" in missing_details:
+        next_question = "Where should the agent get its knowledge from? Provide a file storage location or a website URL."
+
+    return {
+        "status": "further_question",
+        "missing_details": missing_details,
+        "next_question": next_question
+    }
 
 
-def create_retriever_agent(agent_name: str,
+def extract_agent_parameters(user_input, conversation_state):
+    """Send user input to OpenAI and get structured output."""
+    prompt = f"""
+    You are an AI assistant helping users configure an AI agent. Users may provide information in different ways – a single word or a detailed sentence.
+
+    ### **Agent Setup Requirements**
+    1. **Agent Name** (Mandatory) - A meaningful, unique name (e.g., "InfoBot", "FinanceAssistant"). 
+       - ⚠️ **Reject generic terms** like "search agent", "website bot", or "data processor". If no valid name is provided, ask for one.
+    2. **Knowledge Hub** (Mandatory) - A **file storage path** or a **website URL**.
+    3. **LLM Model** (Optional) - Default is `"gpt-4o"`.
+    
+    ---
+    
+    ### **Your Task**
+    - Extract **only** the valid details from the user's input.
+    - **Do NOT assume a name if only a purpose is given**.
+    - **If all required details (agent_name & knowledge_hub) are present, return `"status": "final_confirmation"`**.
+    - If any required detail is missing, return `"status": "further_question"` and **ask only for the missing detail**.
+    - Always return a **structured JSON** response.
+    
+    ---
+
+    Users might provide partial details or no details in free text. Your task is to:
+    - Extract **only** the information provided in the user's input.
+    - Identify missing details and ask the next relevant question.
+
+    **Example Responses:**
+    
+    **If user provides partial details:**
+    - knowledge hub provided but agent name is not there
+    ```json
+    {{
+      "status": "further_question",
+      "model_name": "gpt-4o",
+      "missing_details": ["agent_name", knowledge_hub],
+      "next_question": "what would be the agent name ?"
+    }}
+    ```
+    - knowledge hub provided but agent name is not there
+    ```json
+    {{
+      "status": "further_question",
+      "model_name": "gpt-4o",
+      "knowledge_hub": "/mnt/dir1/dir2",
+      "missing_details": ["agent_name"],
+      "next_question": "what would be the agent name ?"
+    }}
+    ```
+    - agent name is provided but knowledge hub is missing
+    ```json
+    {{
+      "status": "further_question",
+      "model_name": "gpt-4o",
+      "agent_name": "ChatMaster",
+      "missing_details": ["knowledge_hub"],
+      "next_question": "Where should the agent get its knowledge from? Provide a file storage location or a website URL."
+    }}
+    ```
+    
+    **If user provides all details:**
+    ```json
+    {{
+      "status": "final_confirmation",
+      "agent_name": "InfoBot",
+      "knowledge_hub": "https://example.com",
+      "llm_model": "gpt-4o"
+    }}
+    ```
+    or 
+    ```json
+    {{
+      "status": "final_confirmation",
+      "agent_name": "chatbot",
+      "knowledge_hub": "/mnt1/dir1/dir2",
+      "llm_model": "gpt-4o"
+    }}
+    ```
+    **Conversation State So Far:**
+    {json.dumps(conversation_state, indent=2)}
+
+    **User Input:**
+    "{user_input}"
+
+    Now, extract the provided information, determine what is still missing, and return a structured response.
+    
+    """
+
+    response = client.beta.chat.completions.parse(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": "You are an assistant that collects agent setup details."},
+                  {"role": "user", "content": prompt}],
+        response_format = ResponseFormat
+    )
+
+    return response.choices[0].message.content
+
+
+def create_retrieval_agent(agent_name: str,
                            docs_path: Union[str, List[str]],
                            model_name: str = "gpt-4o",
                            ) -> dict:
@@ -153,10 +218,11 @@ def create_retriever_agent(agent_name: str,
         user_id="guestuser@gmail.com",
         type=AgentType.retrieverproxy,
         config=agent_config.model_dump(mode="json"),
+        classification=AgentClassification.advance
     )
 
     workflow = Workflow(
-        name=f"{agent_name} workflow",
+        name=f"{agent_name}",
         description=f"{agent_name} workflow",
         user_id="guestuser@gmail.com"
     )

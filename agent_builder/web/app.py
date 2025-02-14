@@ -1,14 +1,20 @@
 import asyncio
+import json
 import os
 import queue
 import threading
+
+
+import redis.asyncio as redisconn
 import traceback
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from agent_builder.utils.tools import extract_parameters, create_retriever_agent
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from agent_builder.utils.models import UserInput, CreateAgentResponse, BuildingBlocks
+from agent_builder.utils.tools import extract_agent_parameters, create_retrieval_agent, initialize_conversation_state, \
+    generate_prompt
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -16,14 +22,17 @@ from openai import OpenAIError
 
 from agent_builder.chatmanager import WebSocketConnectionManager
 from agent_builder.database import DBManager, workflow_from_id
-from agent_builder.utils import init_app_folders, check_and_cast_datetime_fields, md5_hash, test_model
+from agent_builder.utils import init_app_folders, check_and_cast_datetime_fields, md5_hash, test_model, cache_response, \
+    get_cached_response
 from loguru import logger
 
 
 from agent_builder.chatmanager import ChatManager
 from agent_builder.datamodel import Response, Skill, Model, Message, Session, Workflow, Agent, ContentRequest
 
-managers = {"chat": None}
+managers = {"chat": None, "user_prompt": ""}
+session = {}
+
 
 message_queue = queue.Queue()
 active_connections = []
@@ -66,10 +75,14 @@ ui_folder_path = Path(__file__).resolve().parent / "ui"
 database_engine_uri = folders["database_engine_uri"]
 dbmanager = DBManager(engine_uri=database_engine_uri)
 
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("***** App started *****")
+    global redis
+    redis = await redisconn.Redis(host=REDIS_HOST, port=6379, decode_responses=True)
+    print("✅ Redis connected!")
     managers["chat"] = ChatManager(message_queue=message_queue)
     dbmanager.create_db_and_tables()
 
@@ -77,6 +90,7 @@ async def lifespan(app: FastAPI):
     yield
     # Close all active connections
     await websocket_manager.disconnect_all()
+    await redis.close()
     print("***** App stopped *****")
 
 
@@ -434,16 +448,81 @@ async def get_version():
 
 
 @api.post("/create_agent")
-async def extract_agent_parameters(request: ContentRequest):
+async def create_retriever_agent(user_input: UserInput):
     """Extracts agent parameters from user input and returns structured JSON response."""
-    extracted_params = extract_parameters(request.content)
+    session_id = user_input.session_id
 
-    agent = create_retriever_agent(**extracted_params)
+    if session_id not in session:
+        session[session_id] = {
+            "conversation_state": initialize_conversation_state(),
+            "agents_created": []
+        }
 
-    return agent
+    conversation_state = session[session_id]["conversation_state"]
+
+    structured_prompt = generate_prompt(conversation_state)
+
+    if structured_prompt["status"] == "final_confirmation":
+        session[session_id]["agents_created"].append(structured_prompt)
+
+        session[session_id]["conversation_state"] = initialize_conversation_state()
+        agent = create_retrieval_agent(agent_name=structured_prompt["agent_name"],
+                                       docs_path=structured_prompt["knowledge_hub"],
+                                       model_name=structured_prompt["llm_model"]
+                                       )
+        return CreateAgentResponse(status="complete", content=agent)
+
+    response_json = extract_agent_parameters(user_input.user_input, conversation_state)
+
+    try:
+        response_data = json.loads(response_json)
+        if response_data["status"] == "final_confirmation":
+            content = response_data["content"]
+
+            session[session_id]["agents_created"].append(response_data)
+            session[session_id]["conversation_state"] = initialize_conversation_state()
+            agent = create_retrieval_agent(agent_name=content["agent_name"],
+                                           docs_path=content["knowledge_hub"],
+                                           model_name=content["llm_model"]
+                                           )
+            return CreateAgentResponse(status="complete", content=agent)
+        else:
+            content = response_data["further_question"]
+            if "agent_name" in content and content["agent_name"]:
+                conversation_state["agent_name"] = content["agent_name"]
+
+            if "knowledge_hub" in content and content["knowledge_hub"]:
+                conversation_state["knowledge_hub"] = content["knowledge_hub"]
+
+            if "llm_model" in content and content["llm_model"]:
+                conversation_state["llm_model"] = content["llm_model"]
+
+            for detail in content.get("missing_details", []):
+                if detail in content:
+                    conversation_state[detail] = content[detail]
+
+            return CreateAgentResponse(
+                status="further_question",
+                content=content["next_question"]
+            )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error parsing response: {e}")
 
 
-# websockets
+
+
+@api.get("/building_blocks")
+async def get_building_blocks() -> BuildingBlocks:
+    skills = await list_skills("guestuser@gmail.com")
+    print(skills)
+    models = await list_models("guestuser@gmail.com")
+    agents = await list_agents("guestuser@gmail.com")
+    workflows = await list_workflows()
+
+    response = BuildingBlocks(skills=skills.data, models=models.data, agents=agents.data, workflows=workflows.data)
+    return response
+
 
 
 async def process_socket_message(data: dict, websocket: WebSocket, client_id: str):
@@ -453,9 +532,18 @@ async def process_socket_message(data: dict, websocket: WebSocket, client_id: st
         user_message = Message(**data["data"])
         session_id = data["data"].get("session_id", None)
         workflow_id = data["data"].get("workflow_id", None)
-        response = await run_session_workflow(
+        managers["user_prompt"] = data['data'].get("content", None)
+        cached_response = await get_cached_response(redis, data['data'].get("content", None))
+        print(f"#### cache response : {cached_response}")
+        if cached_response:
+           response = cached_response
+        else:
+          response = await run_session_workflow(
             message=user_message, session_id=session_id, workflow_id=workflow_id
         )
+          user_prompt = managers.get("user_prompt", None)
+          if response["data"]["content"]:
+            await cache_response(redis, user_prompt, response)
         response_socket_message = {
             "type": "agent_response",
             "data": response,

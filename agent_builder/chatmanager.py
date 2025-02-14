@@ -36,7 +36,7 @@ class ChatManager:
              **kwargs
              ) -> Message:
 
-        work_dir = Path(user_dir) / str(message.session_id) / datetime.now().strftime("%Y%m%d_%H-%M-%S")
+        work_dir = Path(user_dir) / str(message.session_id) / datetime.now().strftime("%Y%m%d")
 
         os.makedirs(work_dir, exist_ok=True)
 
