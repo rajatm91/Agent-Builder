@@ -188,6 +188,10 @@ class WorkflowAgentType(str, Enum):
     receiver = "receiver"
     planner = "planner"
 
+class AgentClassification(str, Enum):
+    basic = "basic"
+    advance = "advance"
+
 
 class WorkflowAgentLink(SQLModel, table=True):
     __table_args__ = {"sqlite_autoincrement": True}
@@ -223,6 +227,10 @@ class Agent(SQLModel, table=True):
         default=AgentType.assistant, sa_column=Column(SqlEnum(AgentType))
     )
     config: AgentConfig = Field(default_factory=AgentConfig, sa_column=Column(JSON))
+    classification : AgentClassification = Field(
+        default=AgentClassification.basic,
+        sa_column=Column(SqlEnum(AgentClassification))
+    )
     skills: List[Skill] = Relationship(
         back_populates="agents", link_model=AgentSkillLink
     )
