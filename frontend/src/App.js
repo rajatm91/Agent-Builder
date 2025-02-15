@@ -46,8 +46,6 @@ const StyledButton = styled(Button)(({ theme, selected }) => ({
 
 const App = () => {
   const [refreshAgent, setRefreshAgent] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openItem, setOpenedItem] = useState("");
   const [refreshAgentList, setRefreshAgentList] = useState([]);
   const [selectedTab, setSelectedTab] = useState("Build");
   const [expanded, setExpanded] = useState(false);
@@ -58,11 +56,6 @@ const App = () => {
 
   const handleRefreshAgentListAfterEdit = () => {
     setRefreshAgentList(!refreshAgentList);
-  };
-
-  const openSideBar = (item) => {
-    setOpenedItem(item);
-    setSidebarOpen(true);
   };
 
   const handleChange = (panel) => (event, isExpanded) => {

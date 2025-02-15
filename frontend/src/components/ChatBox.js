@@ -4,13 +4,20 @@ import {
   Button,
   Box,
   Typography,
-  IconButton,
   CircularProgress,
-  Paper
+  Paper,
+  keyframes,
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import PoweredBy from "./PoweredBy";
 import { Send } from "@mui/icons-material";
+
+// Define a pulsating animation
+const pulsate = keyframes`
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+`;
 
 const ChatBox = ({ onCreateAgent }) => {
   const [message, setMessage] = useState("");
@@ -41,11 +48,11 @@ const ChatBox = ({ onCreateAgent }) => {
       const response = await fetch("http://localhost:8081/api/create_agent", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          content: message
-        })
+          content: message,
+        }),
       });
 
       const data = await response.json();
@@ -56,27 +63,27 @@ const ChatBox = ({ onCreateAgent }) => {
           collection_name: data?.collection_name,
           model: data?.model,
           embedding_model: data?.embedding_model,
-          reason: "Agent successfully created"
+          reason: "Agent successfully created",
         };
         onCreateAgent(agentDetails);
         setMessages((prev) => [
           ...prev,
           {
             text: `Agent creation Successfully with name ${data?.name}.`,
-            isUser: false
-          }
+            isUser: false,
+          },
         ]);
       } else {
         setMessages((prev) => [
           ...prev,
-          { text: "Agent creation failed. Please try again.", isUser: false }
+          { text: "Agent creation failed. Please try again.", isUser: false },
         ]);
       }
     } catch (error) {
       console.error("Error creating agent:", error);
       setMessages((prev) => [
         ...prev,
-        { text: "Error occurred while creating agent.", isUser: false }
+        { text: "Error occurred while creating agent.", isUser: false },
       ]);
     } finally {
       setLoading(false);
@@ -100,7 +107,7 @@ const ChatBox = ({ onCreateAgent }) => {
         height: "100%",
         backgroundColor: "#f9fafb",
         borderRadius: 2,
-        overflow: "hidden"
+        overflow: "hidden",
       }}
     >
       {/* Chat Container */}
@@ -109,7 +116,7 @@ const ChatBox = ({ onCreateAgent }) => {
           display: "flex",
           flexDirection: "column",
           flexGrow: 1,
-          overflow: "hidden"
+          overflow: "hidden",
         }}
       >
         {/* Messages Scrollable Area */}
@@ -120,9 +127,9 @@ const ChatBox = ({ onCreateAgent }) => {
             padding: 2,
             backgroundColor: "#ffffff",
             borderRadius: 2,
-            margin: 2,
+            margin: 1,
             boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-            maxHeight: "calc(100vh - 320px)" // Adjust as needed to fit within screen height
+            maxHeight: "calc(100vh - 320px)",
           }}
         >
           {messages.length === 0 ? (
@@ -131,11 +138,19 @@ const ChatBox = ({ onCreateAgent }) => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                height: "100%"
+                height: "100%",
               }}
             >
-              <Typography variant="h6" color="textSecondary">
-                Start chatting by typing a message...
+              {/* Pulsating Text Animation */}
+              <Typography
+                variant="h6"
+                color="textSecondary"
+                sx={{
+                  animation: `${pulsate} 1.5s infinite`,
+                  fontWeight: 500,
+                }}
+              >
+                Start chatting...
               </Typography>
             </Box>
           ) : (
@@ -158,7 +173,7 @@ const ChatBox = ({ onCreateAgent }) => {
               display: "flex",
               alignItems: "center",
               marginTop: 1,
-              paddingLeft: 2
+              paddingLeft: 2,
             }}
           >
             <CircularProgress size={16} sx={{ marginRight: 1 }} />
@@ -181,7 +196,7 @@ const ChatBox = ({ onCreateAgent }) => {
             borderTop: "1px solid #ddd",
             backgroundColor: "#ffffff",
             boxShadow: "0px -2px 4px rgba(0, 0, 0, 0.1)",
-            borderRadius: 0
+            borderRadius: 0,
           }}
         >
           <TextField
@@ -195,12 +210,12 @@ const ChatBox = ({ onCreateAgent }) => {
               borderRadius: 2,
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#ddd"
+                  borderColor: "#ddd",
                 },
                 "&:hover fieldset": {
-                  borderColor: "#1976d2"
-                }
-              }
+                  borderColor: "#1976d2",
+                },
+              },
             }}
           />
           <Button
@@ -215,8 +230,8 @@ const ChatBox = ({ onCreateAgent }) => {
               borderRadius: 2,
               boxShadow: "none",
               "&:hover": {
-                backgroundColor: "#1565c0"
-              }
+                backgroundColor: "#1565c0",
+              },
             }}
           >
             Send

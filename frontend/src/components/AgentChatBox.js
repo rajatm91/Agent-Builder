@@ -1,8 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { TextField, Button, Box, Typography, CircularProgress, Paper } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  CircularProgress,
+  Paper,
+  keyframes,
+} from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import useWebSocket from "../websocket/useWebSocket";
 import { Send, Person } from "@mui/icons-material";
+
+// Define a pulsating animation
+const pulsate = keyframes`
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+`;
 
 const AgentChatBox = ({ agent }) => {
   const [message, setMessage] = useState("");
@@ -23,7 +38,7 @@ const AgentChatBox = ({ agent }) => {
         if (messageContent) {
           setMessages((prev) => [
             ...prev,
-            { text: messageContent, isUser: false }
+            { text: messageContent, isUser: false },
           ]);
 
           if (messageContent.includes("TERMINATE")) {
@@ -41,10 +56,10 @@ const AgentChatBox = ({ agent }) => {
 
   useEffect(() => {
     if (loading) {
-      const typingMessages = agent?.name + ' is typing...';
+      const typingMessages = agent?.name + " is typing...";
       setTypingMessage(typingMessages);
     } else {
-      setTypingMessage(""); 
+      setTypingMessage("");
     }
   }, [loading]);
 
@@ -58,18 +73,18 @@ const AgentChatBox = ({ agent }) => {
         data: {
           connection_id: "2",
           content: message,
-          role: "user", 
+          role: "user",
           user_id: agent.user_id,
           session_id: 2,
           workflow_id: agent?.id,
-          message_type: "user_message"
+          message_type: "user_message",
         },
-        type: "user_message"
+        type: "user_message",
       };
 
       sendSocketMessage(messageObject);
       setMessage("");
-      setLoading(true); 
+      setLoading(true);
     }
   };
 
@@ -80,7 +95,7 @@ const AgentChatBox = ({ agent }) => {
         flexDirection: "column",
         justifyContent: "flex-end",
         width: "98%",
-        maxWidth: "90vw",       
+        maxWidth: "90vw",
         borderRadius: 4,
       }}
     >
@@ -143,8 +158,16 @@ const AgentChatBox = ({ agent }) => {
                 height: "100%",
               }}
             >
-              <Typography variant="body1" color="textSecondary">
-                Start chatting by typing a message to {agent?.name}...
+              {/* Pulsating Text Animation */}
+              <Typography
+                variant="body1"
+                color="textSecondary"
+                sx={{
+                  animation: `${pulsate} 1.5s infinite`,
+                  fontWeight: 500,
+                }}
+              >
+                Start chatting with {agent?.name}...
               </Typography>
             </Box>
           ) : (
@@ -178,6 +201,7 @@ const AgentChatBox = ({ agent }) => {
             padding: "10px 20px",
             borderTop: "1px solid #ddd",
             backgroundColor: "#f9fafb",
+            borderRadius: 2,
           }}
         >
           <TextField
