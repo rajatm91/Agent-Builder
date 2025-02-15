@@ -4,28 +4,16 @@ import {
   ListItem,
   ListItemText,
   Icon,
-  Typography,
-  CircularProgress,
-  Alert,
+  Typography,  
   Collapse,
-  Divider,
-  Paper,
+  Divider,  
   Box,
   ListItemIcon
 } from "@mui/material";
-import useAPIResponse from "../hooks/useGetAgentList";
-import { Assistant, ExpandMore, ExpandLess, Memory } from "@mui/icons-material"; // Import the icons
+import { ExpandMore, ExpandLess, Memory } from "@mui/icons-material"; // Import the icons
 
-const ModelsList = () => {
+const ModelsList = ({models}) => {
   const [selectedModel, setSelectedModel] = useState(null);
-
-  const {
-    response: models,
-    loading,
-    error
-  } = useAPIResponse("models", {
-    user_id: "guestuser@gmail.com"
-  });
 
   const handleModelClick = (model) => {
     setSelectedModel(selectedModel?.id === model.id ? null : model); // Toggle accordion
@@ -33,16 +21,8 @@ const ModelsList = () => {
 
   return (
     <Box>
-      {/* Loading Indicator */}
-      {loading && (
-        <CircularProgress sx={{ display: "block", mx: "auto", my: 3 }} />
-      )}
-
-      {/* Error Message */}
-      {error && <Alert severity="error">{error}</Alert>}
-
       {/* Models List */}
-      {!loading && !error && models?.length > 0 && (
+      {models?.length > 0 && (
         <List>
           {models.map((model) => (
             <Box key={model.id}>
@@ -129,7 +109,7 @@ const ModelsList = () => {
       )}
 
       {/* No Models Available */}
-      {!loading && !error && models?.length === 0 && (
+      {models?.length === 0 && (
         <Typography align="center" color="textSecondary">
           No models available
         </Typography>

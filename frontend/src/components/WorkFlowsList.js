@@ -4,35 +4,19 @@ import {
   ListItem,
   ListItemText,
   Typography,
-  CircularProgress,
-  Alert,
   Button,
   Paper,
   Box,
   ListItemIcon
 } from "@mui/material";
-import useAPIResponse from "../hooks/useGetAgentList";
 import AgentChatBox from "./AgentChatBox";
-import { AccountTree, Close, Work } from "@mui/icons-material";
+import { AccountTree, Close } from "@mui/icons-material";
 import ImageDisplay from "./ImageDisplay";
 import VerticalFlow from "../assets/images/VerticalFlow.png";
 
-const WorkFlowsList = ({ refresh }) => {
+const WorkFlowsList = ({ workflows, refresh }) => {
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [openChatBox, setOpenChatBox] = useState(false);
-
-  useEffect(() => {
-    console.log("Refreshing workflows list because refresh changed.");
-  }, [refresh]);
-
-  const {
-    response: workflows,
-    loading,
-    error
-  } = useAPIResponse("workflows", {
-    user_id: "guestuser@gmail.com",
-    refreshKey: refresh
-  });
 
   const handleWorkFlowItem = (workflow) => {
     setSelectedWorkflow(workflow);
@@ -41,16 +25,8 @@ const WorkFlowsList = ({ refresh }) => {
 
   return (
     <Box>
-      {/* Loading Indicator */}
-      {loading && (
-        <CircularProgress sx={{ display: "block", margin: "auto" }} />
-      )}
-
-      {/* Error Handling */}
-      {error && <Alert severity="error">{error}</Alert>}
-
       {/* Workflows List */}
-      {!loading && !error && workflows?.length > 0 && (
+      {workflows?.length > 0 && (
         <List
           sx={{
             width: "100%",
@@ -83,7 +59,7 @@ const WorkFlowsList = ({ refresh }) => {
       )}
 
       {/* No Workflows */}
-      {!loading && !error && workflows?.length === 0 && (
+      {workflows?.length === 0 && (
         <Typography align="center" color="textSecondary">
           No workflows available
         </Typography>
