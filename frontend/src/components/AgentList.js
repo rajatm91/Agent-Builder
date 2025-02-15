@@ -4,8 +4,6 @@ import {
   ListItem,
   ListItemText,
   Typography,
-  CircularProgress,
-  Alert,
   Divider,
   Button,
   TextField,
@@ -18,11 +16,9 @@ import {
   IconButton,
   ListItemIcon
 } from "@mui/material";
-import useAPIResponse from "../hooks/useGetAgentList";
 import apiService from "../api/apiService";
 import {
   Edit,
-  Engineering,  
   Assignment,
   HelpOutline,
   FileCopy,
@@ -33,20 +29,11 @@ import {
   Group
 } from "@mui/icons-material";
 
-const AgentList = ({ onRefresh }) => {
+const AgentList = ({ agents, onRefresh }) => {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [editedAgent, setEditedAgent] = useState(null);
   const [openAdvanced, setOpenAdvanced] = useState(false);
-
-  const {
-    response: agentsNew,
-    loading,
-    error
-  } = useAPIResponse("agents", {
-    user_id: "guestuser@gmail.com",
-    refreshKey: onRefresh
-  });
 
   useEffect(() => {
     console.log("Refreshing Agent list because refresh changed.");
@@ -103,12 +90,10 @@ const AgentList = ({ onRefresh }) => {
 
   return (
     <Box>
-      {loading && <CircularProgress />}
-      {error && <Alert severity="error">{error}</Alert>}
-
-      {!loading && !error && agentsNew?.length > 0 && (
+  
+      {agents?.length > 0 && (
         <List>
-          {agentsNew?.map((agent) => (
+          {agents?.map((agent) => (
             <Box key={agent.id}>
               {/* Agent List Item */}
               <ListItem
@@ -169,7 +154,7 @@ const AgentList = ({ onRefresh }) => {
         </List>
       )}
 
-      {!loading && !error && agentsNew?.length === 0 && (
+      {agents?.length === 0 && (
         <Typography>No Agents available</Typography>
       )}
 

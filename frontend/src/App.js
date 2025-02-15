@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -9,6 +9,7 @@ import {
   Typography,
   Divider,
   styled,
+  CircularProgress,
 } from "@mui/material";
 import {
   Dashboard as DashboardIcon,
@@ -49,6 +50,30 @@ const App = () => {
   const [refreshAgentList, setRefreshAgentList] = useState([]);
   const [selectedTab, setSelectedTab] = useState("Build");
   const [expanded, setExpanded] = useState(false);
+  const [buildingBlocks, setBuildingBlocks] = useState({
+    agents: [],
+    models: [],
+    workflows: [],
+    skills: [],
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Fetch building blocks data from the API
+  useEffect(() => {
+    const fetchBuildingBlocks = async () => {
+      try {
+        const response = await fetch("http://localhost:8081/api/building_blocks");
+        const data = await response.json();
+        setBuildingBlocks(data);
+      } catch (error) {
+        console.error("Error fetching building blocks:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBuildingBlocks();
+  }, []);
 
   const handleCreateAgent = (details) => {
     setRefreshAgent(!refreshAgent);
@@ -61,6 +86,21 @@ const App = () => {
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
   };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: "flex", height: "100vh", flexDirection: "column", backgroundColor: "#f9fafb" }}>
@@ -117,56 +157,71 @@ const App = () => {
         >
           {selectedTab === "Build" && (
             <>
-              <StyledAccordion
-                expanded={expanded === "agents"}
-                onChange={handleChange("agents")}
-              >
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  id="agents-header"
+              {/* Agents Accordion */}
+              {buildingBlocks.agents.length > 0 && (
+                <StyledAccordion
+                  expanded={expanded === "agents"}
+                  onChange={handleChange("agents")}
                 >
-                  <Group sx={{ mr: 1, color: "#1976d2" }} />
-                  <Typography sx={{ fontWeight: "bold" }}>Agents</Typography>
-                </AccordionSummary>
-                <Divider sx={{ width: "100%" }} />
-                <AccordionDetails>
-                  <AgentList onRefresh={handleRefreshAgentListAfterEdit} />
-                </AccordionDetails>
-              </StyledAccordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    id="agents-header"
+                  >
+                    <Group sx={{ mr: 1, color: "#1976d2" }} />
+                    <Typography sx={{ fontWeight: "bold" }}>Agents</Typography>
+                  </AccordionSummary>
+                  <Divider sx={{ width: "100%" }} />
+                  <AccordionDetails>
+                    <AgentList
+                      agents={buildingBlocks.agents}
+                      onRefresh={handleRefreshAgentListAfterEdit}
+                    />
+                  </AccordionDetails>
+                </StyledAccordion>
+              )}
 
-              <StyledAccordion
-                expanded={expanded === "models"}
-                onChange={handleChange("models")}
-              >
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  id="models-header"
+              {/* Models Accordion */}
+              {buildingBlocks.models.length > 0 && (
+                <StyledAccordion
+                  expanded={expanded === "models"}
+                  onChange={handleChange("models")}
                 >
-                  <Memory sx={{ mr: 1, color: "#1976d2" }} />
-                  <Typography sx={{ fontWeight: "bold" }}>Models</Typography>
-                </AccordionSummary>
-                <Divider sx={{ width: "100%" }} />
-                <AccordionDetails>
-                  <ModelsList />
-                </AccordionDetails>
-              </StyledAccordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    id="models-header"
+                  >
+                    <Memory sx={{ mr: 1, color: "#1976d2" }} />
+                    <Typography sx={{ fontWeight: "bold" }}>Models</Typography>
+                  </AccordionSummary>
+                  <Divider sx={{ width: "100%" }} />
+                  <AccordionDetails>
+                    <ModelsList models={buildingBlocks.models} />
+                  </AccordionDetails>
+                </StyledAccordion>
+              )}
 
-              <StyledAccordion
-                expanded={expanded === "workflows"}
-                onChange={handleChange("workflows")}
-              >
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  id="workflows-header"
+              {/* Workflows Accordion */}
+              {buildingBlocks.workflows.length > 0 && (
+                <StyledAccordion
+                  expanded={expanded === "workflows"}
+                  onChange={handleChange("workflows")}
                 >
-                  <AccountTree sx={{ mr: 1, color: "#1976d2" }} />
-                  <Typography sx={{ fontWeight: "bold" }}>Workflows</Typography>
-                </AccordionSummary>
-                <Divider sx={{ width: "100%" }} />
-                <AccordionDetails>
-                  <WorkFlowsList refresh={refreshAgent} />
-                </AccordionDetails>
-              </StyledAccordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    id="workflows-header"
+                  >
+                    <AccountTree sx={{ mr: 1, color: "#1976d2" }} />
+                    <Typography sx={{ fontWeight: "bold" }}>Workflows</Typography>
+                  </AccordionSummary>
+                  <Divider sx={{ width: "100%" }} />
+                  <AccordionDetails>
+                    <WorkFlowsList
+                      workflows={buildingBlocks.workflows}
+                      refresh={refreshAgent}
+                    />
+                  </AccordionDetails>
+                </StyledAccordion>
+              )}
             </>
           )}
           {selectedTab === "Playground" && (
@@ -182,7 +237,7 @@ const App = () => {
                 <Typography sx={{ fontWeight: "bold" }}>Workflows</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <WorkFlowsList />
+                <WorkFlowsList workflows={buildingBlocks.workflows} />
               </AccordionDetails>
             </StyledAccordion>
           )}

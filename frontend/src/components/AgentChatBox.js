@@ -94,8 +94,8 @@ const AgentChatBox = ({ agent }) => {
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
-        width: "98%",
-        maxWidth: "90vw",
+        width: "100%",
+        maxWidth: "100vw",
         borderRadius: 4,
       }}
     >
