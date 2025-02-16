@@ -7,7 +7,8 @@ from typing import Any
 from alembic import command, util
 from alembic.config import Config
 from loguru import logger
-from . import DBManager
+
+
 from .system_prompt import AGENT_CREATOR_SYSTEM_MESSAGE
 
 
@@ -25,41 +26,7 @@ from ..datamodel import (
     Workflow,
     WorkflowAgentLink, Response,
 )
-from ..utils import check_and_cast_datetime_fields
 
-
-def create_entity(dbmanager: DBManager, model: Any, model_class: Any, filters: dict = None):
-    """Create a new entity"""
-    model = check_and_cast_datetime_fields(model)
-    try:
-        response: Response = dbmanager.upsert(model)
-        return response.model_dump(mode="json")
-
-    except Exception as ex_error:
-        print(ex_error)
-        return {
-            "status": False,
-            "message": f"Error occurred while creating {model_class.__name__}: "
-            + str(ex_error),
-        }
-
-
-def list_entity(
-    dbmanager: DBManager,
-    model_class: Any,
-    filters: dict = None,
-    return_json: bool = True,
-    order: str = "desc",
-):
-    """List all entities for a user"""
-    return dbmanager.get(
-        model_class, filters=filters, return_json=return_json, order=order
-    )
-
-
-def delete_entity(dbmanager: DBManager, model_class: Any, filters: dict = None):
-    """Delete an entity"""
-    return dbmanager.delete(filters=filters, model_class=model_class)
 
 
 def workflow_from_id(workflow_id: int, dbmanager: Any):
@@ -226,14 +193,12 @@ def init_db_samples(dbmanager: Any):
         api_type="google",
     )
 
-    # skills
-
-    # generate_image_skill = Skill(
-    #     name="generate_images",
-    #     description="Generate and save images based on a user's query.",
-    #     content='\nfrom typing import List\nimport uuid\nimport requests  # to perform HTTP requests\nfrom pathlib import Path\n\nfrom openai import OpenAI\n\n\ndef generate_and_save_images(query: str, image_size: str = "1024x1024") -> List[str]:\n    """\n    Function to paint, draw or illustrate images based on the users query or request. Generates images from a given query using OpenAI\'s DALL-E model and saves them to disk.  Use the code below anytime there is a request to create an image.\n\n    :param query: A natural language description of the image to be generated.\n    :param image_size: The size of the image to be generated. (default is "1024x1024")\n    :return: A list of filenames for the saved images.\n    """\n\n    client = OpenAI()  # Initialize the OpenAI client\n    response = client.images.generate(model="dall-e-3", prompt=query, n=1, size=image_size)  # Generate images\n\n    # List to store the file names of saved images\n    saved_files = []\n\n    # Check if the response is successful\n    if response.data:\n        for image_data in response.data:\n            # Generate a random UUID as the file name\n            file_name = str(uuid.uuid4()) + ".png"  # Assuming the image is a PNG\n            file_path = Path(file_name)\n\n            img_url = image_data.url\n            img_response = requests.get(img_url)\n            if img_response.status_code == 200:\n                # Write the binary content to a file\n                with open(file_path, "wb") as img_file:\n                    img_file.write(img_response.content)\n                    print(f"Image saved to {file_path}")\n                    saved_files.append(str(file_path))\n            else:\n                print(f"Failed to download the image from {img_url}")\n    else:\n        print("No image data found in the response!")\n\n    # Return the list of saved files\n    return saved_files\n\n\n# Example usage of the function:\n# generate_and_save_images("A cute baby sea otter")\n',
-    #     user_id="guestuser@gmail.com",
-    # )
+    generate_image_skill = Skill(
+        name="generate_images",
+        description="Generate and save images based on a user's query.",
+        content='\nfrom typing import List\nimport uuid\nimport requests  # to perform HTTP requests\nfrom pathlib import Path\n\nfrom openai import OpenAI\n\n\ndef generate_and_save_images(query: str, image_size: str = "1024x1024") -> List[str]:\n    """\n    Function to paint, draw or illustrate images based on the users query or request. Generates images from a given query using OpenAI\'s DALL-E model and saves them to disk.  Use the code below anytime there is a request to create an image.\n\n    :param query: A natural language description of the image to be generated.\n    :param image_size: The size of the image to be generated. (default is "1024x1024")\n    :return: A list of filenames for the saved images.\n    """\n\n    client = OpenAI()  # Initialize the OpenAI client\n    response = client.images.generate(model="dall-e-3", prompt=query, n=1, size=image_size)  # Generate images\n\n    # List to store the file names of saved images\n    saved_files = []\n\n    # Check if the response is successful\n    if response.data:\n        for image_data in response.data:\n            # Generate a random UUID as the file name\n            file_name = str(uuid.uuid4()) + ".png"  # Assuming the image is a PNG\n            file_path = Path(file_name)\n\n            img_url = image_data.url\n            img_response = requests.get(img_url)\n            if img_response.status_code == 200:\n                # Write the binary content to a file\n                with open(file_path, "wb") as img_file:\n                    img_file.write(img_response.content)\n                    print(f"Image saved to {file_path}")\n                    saved_files.append(str(file_path))\n            else:\n                print(f"Failed to download the image from {img_url}")\n    else:\n        print("No image data found in the response!")\n\n    # Return the list of saved files\n    return saved_files\n\n\n# Example usage of the function:\n# generate_and_save_images("A cute baby sea otter")\n',
+        user_id="guestuser@gmail.com",
+    )
 
 
 
@@ -286,7 +251,7 @@ def init_db_samples(dbmanager: Any):
         session.add(gpt_4_model)
         session.add(user_proxy)
         session.add(default_assistant)
-
+        session.add(generate_image_skill)
         session.add(default_workflow)
 
 
@@ -299,6 +264,11 @@ def init_db_samples(dbmanager: Any):
             secondary_id=gpt_4_model.id
         )
 
+        dbmanager.link(
+            link_type="agent_skill",
+            primary_id=default_assistant.id,
+            secondary_id=generate_image_skill.id,
+        )
 
 
         dbmanager.link(
