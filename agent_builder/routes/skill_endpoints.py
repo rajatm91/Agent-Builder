@@ -1,6 +1,8 @@
-from agent_builder.database import list_entity, create_entity, DBManager, delete_entity
+from agent_builder.utils.utils import list_entity, create_entity, DBManager, delete_entity
 from agent_builder.datamodel import Skill
 from fastapi import APIRouter
+
+
 
 def setup_router(router: APIRouter, dbmanager: DBManager):
     @router.get("/skills")
