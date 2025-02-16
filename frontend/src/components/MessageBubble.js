@@ -1,7 +1,11 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import { formatMessage } from "../utils/userDetails";
 import { Person, SmartToy } from "@mui/icons-material";
+
+// Helper function to replace ** with <strong> tags
+const formatBotMessage = (message) => {
+  return message.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+};
 
 const MessageBubble = ({ message, isUser }) => {
   return (
@@ -10,8 +14,13 @@ const MessageBubble = ({ message, isUser }) => {
         display: "flex",
         alignItems: "center",
         justifyContent: isUser ? "flex-end" : "flex-start",
-        mb: 2, // Increased margin for better spacing
+        mb: 2,
         width: "100%",
+        animation: "fadeIn 0.3s ease-in-out", // Smooth fade-in effect
+        "@keyframes fadeIn": {
+          from: { opacity: 0, transform: "translateY(5px)" },
+          to: { opacity: 1, transform: "translateY(0)" },
+        },
       }}
     >
       {/* Bot Icon (Left Side) */}
@@ -21,9 +30,10 @@ const MessageBubble = ({ message, isUser }) => {
             mr: 1.5,
             color: "#1976d2",
             fontSize: "28px",
-            backgroundColor: "#f0f4f9",
+            backgroundColor: "#e3f2fd",
             borderRadius: "50%",
             padding: "6px",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
           }}
         />
       )}
@@ -31,29 +41,42 @@ const MessageBubble = ({ message, isUser }) => {
       {/* Message Bubble */}
       <Box
         sx={{
-          backgroundColor: isUser ? "#1976d2" : "#f0f4f9",
-          color: isUser ? "#fff" : "#000",
+          backgroundColor: isUser ? "#1976D264" : "#DBDFE4FF",
+          color: isUser ? "#fff" : "#333",
           padding: "12px 16px",
-          borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px", // Rounded corners based on user/bot
+          borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
           maxWidth: "70%",
           wordBreak: "break-word",
-          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
-          transition: "transform 0.2s ease-in-out", // Smooth hover effect
+          boxShadow: "0px 3px 6px rgba(0, 0, 0, 0.1)",
+          transition: "transform 0.2s ease-in-out",
           "&:hover": {
-            transform: "scale(1.02)", // Slight zoom on hover
+            transform: "scale(1.02)",
           },
         }}
       >
-        <Typography
-          variant="body1"
-          sx={{
-            fontSize: "14px",
-            lineHeight: "1.5",
-            fontWeight: isUser ? 500 : 400,
-          }}
-        >
-          {formatMessage(message)}
-        </Typography>
+        {isUser ? (
+          <Typography
+            variant="body1"
+            sx={{
+              fontSize: "14px",
+              lineHeight: "1.5",
+              fontWeight: 500,
+              color: "#333",
+            }}
+          >
+            {message}
+          </Typography>
+        ) : (
+          <Typography
+            variant="body1"
+            sx={{
+              fontSize: "14px",
+              lineHeight: "1.5",
+              fontWeight: 400,
+            }}
+            dangerouslySetInnerHTML={{ __html: formatBotMessage(message) }}
+          />
+        )}
       </Box>
 
       {/* User Icon (Right Side) */}
@@ -63,9 +86,10 @@ const MessageBubble = ({ message, isUser }) => {
             ml: 1.5,
             color: "#1976d2",
             fontSize: "28px",
-            backgroundColor: "#f0f4f9",
+            backgroundColor: "#e3f2fd",
             borderRadius: "50%",
             padding: "6px",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
           }}
         />
       )}

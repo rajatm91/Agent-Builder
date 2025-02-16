@@ -223,25 +223,29 @@ const AgentChatBox = ({ agent }) => {
               },
             }}
           />
+          
+
           <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSend}
-            sx={{
-              ml: 2,
-              borderRadius: 20,
-              height: "100%",
-              padding: "10px 20px",
-              fontWeight: 600,
-              boxShadow: "none",
-              "&:hover": {
-                backgroundColor: "#3d8bfd",
-              },
-            }}
-          >
-            <Send sx={{ marginRight: 1 }} /> {/* Send Icon */}
-            Send
-          </Button>
+                    variant="contained"
+                    color="primary"
+                    startIcon={<Send />}
+                    onClick={handleSend}
+                    sx={{
+                      ml: 2,
+                      textTransform: "none",
+                      padding: "10px 20px",
+                      borderRadius: "8px",
+                      boxShadow: "none",
+                      background: "linear-gradient(45deg, #1e88e5, #1976d2)",
+                      "&:hover": {
+                        backgroundColor: "#1565c0",
+                        transform: "scale(1.05)", // Button hover effect
+                        transition: "all 0.2s ease-in-out"
+                      }
+                    }}
+                  >
+                    Send
+                  </Button>
         </Box>
       </Paper>
     </Box>

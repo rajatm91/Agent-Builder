@@ -74,7 +74,6 @@ const AgentList = ({ agents, onRefresh }) => {
     }
   };
 
-  // Mapping agent.type to dialog title
   const getDialogTitle = (type) => {
     switch (type) {
       case "retrieverproxy":
@@ -89,119 +88,111 @@ const AgentList = ({ agents, onRefresh }) => {
   };
 
   return (
-    <Box>
-  
-      {agents?.length > 0 && (
-        <List>
+    <Box sx={{ maxWidth: "900px", margin: "auto" }}>
+      {agents?.length > 0 ? (
+        <List
+          sx={{
+            backgroundColor: "#f8fafc",
+            borderRadius: "10px",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+          }}
+        >
           {agents?.map((agent) => (
             <Box key={agent.id}>
-              {/* Agent List Item */}
               <ListItem
                 button
                 onClick={() => handleAgentClick(agent)}
                 sx={{
-                  "&:hover": { backgroundColor: "#f0f0f0" }
+                  "&:hover": { backgroundColor: "#e3f2fd" },
+                  padding: "14px 18px",
+                  display: "flex",
+                  alignItems: "center",
+                  transition: "background 0.2s ease-in-out"
                 }}
               >
-                {/* Icon */}
-                <ListItemIcon sx={{ minWidth: 40 }}>
-                  <Group color="action" />
+                <ListItemIcon sx={{ minWidth: 45 }}>
+                  <Group sx={{ color: "#1565c0", fontSize: "30px" }} />
                 </ListItemIcon>
 
-                {/* Text Content */}
                 <ListItemText
                   primary={
                     <Typography
                       variant="body1"
-                      sx={{
-                        fontWeight: "bold",
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        display: "block"
-                      }}
+                      sx={{ fontWeight: "bold", color: "#0d47a1" }}
                     >
                       {agent.config?.name}
                     </Typography>
                   }
-                  secondary={agent.user_id}
+                  secondary={
+                    <Typography variant="body2" sx={{ color: "#546e7a" }}>
+                      {agent.user_id}
+                    </Typography>
+                  }
                 />
 
-                {/* Edit Button */}
-                <Box
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditClick(agent);
+                  }}
                   sx={{
-                    minWidth: 50,
-                    display: "flex",
-                    justifyContent: "flex-end"
+                    color: "#1976d2",
+                    transition: "transform 0.2s ease-in-out",
+                    "&:hover": { transform: "scale(1.15)" }
                   }}
                 >
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditClick(agent);
-                    }}
-                    color="primary"
-                    sx={{ marginLeft: "8px" }}
-                  >
-                    <Edit />
-                  </IconButton>
-                </Box>
+                  <Edit />
+                </IconButton>
               </ListItem>
 
-              {/* Divider */}
               <Divider />
             </Box>
           ))}
         </List>
-      )}
-
-      {agents?.length === 0 && (
-        <Typography>No Agents available</Typography>
+      ) : (
+        <Typography
+          variant="body1"
+          sx={{ textAlign: "center", color: "#b0bec5", mt: 3 }}
+        >
+          No Agents Available
+        </Typography>
       )}
 
       {/* Edit Agent Modal */}
       <Dialog
         open={openModal}
         onClose={() => setOpenModal(false)}
-        maxWidth="md"
+        maxWidth="sm"
         fullWidth
       >
         <DialogTitle
           sx={{
             fontWeight: "bold",
-            backgroundColor: "#f5f5f5",
-            alignItems:'center',            
-            justifyContent:'center',
+            backgroundColor: "#e3f2fd",
+            textAlign: "center",
+            padding: "16px",
+            color: "#0d47a1"
           }}
         >
-          Edit Agent
+          Edit {getDialogTitle(editedAgent?.type)}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ padding: "20px" }}>
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: "bold", marginBottom: "10px" }}
-            >
+            <Typography variant="body1" sx={{ fontWeight: "bold", mb: 2 }}>
               Agent Name:{" "}
-              <span style={{ fontWeight: "normal" }}>
+              <span style={{ fontWeight: "normal", color: "#1565c0" }}>
                 {editedAgent?.config?.name || "N/A"}
               </span>
             </Typography>
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: "bold", marginBottom: "10px" }}
-            >
+            <Typography variant="body1" sx={{ fontWeight: "bold", mb: 2 }}>
               Agent Type:{" "}
-              <span style={{ fontWeight: "normal" }}>
-                {getDialogTitle(editedAgent?.type)}
+              <span style={{ fontWeight: "normal", color: "#1565c0" }}>
+                {editedAgent?.type || "N/A"}
               </span>
             </Typography>
-
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: "bold", marginBottom: "20px" }}
-            >
-              Knowledge Hub:{" "}
-              <span style={{ fontWeight: "normal" }}>
+            <Typography variant="body1" sx={{ fontWeight: "bold", mb: 2 }}>
+            Knowledge Hub:{" "}
+              <span style={{ fontWeight: "normal", color: "#1565c0" }}>
                 {editedAgent?.config?.retrieve_config?.docs_path || "N/A"}
               </span>
             </Typography>
@@ -216,9 +207,7 @@ const AgentList = ({ agents, onRefresh }) => {
               fullWidth
               margin="normal"
               InputProps={{
-                startAdornment: (
-                  <Assignment sx={{ color: "gray", marginRight: 1 }} />
-                )
+                startAdornment: <Assignment sx={{ color: "#1565c0", mr: 1 }} />
               }}
             />
 
@@ -233,21 +222,26 @@ const AgentList = ({ agents, onRefresh }) => {
               fullWidth
               margin="normal"
               InputProps={{
-                startAdornment: (
-                  <HelpOutline sx={{ color: "gray", marginRight: 1 }} />
-                )
+                startAdornment: <HelpOutline sx={{ color: "#1565c0", mr: 1 }} />
               }}
             />
 
             {/* Advanced Options */}
-            <Box sx={{ marginTop: "20px" }}>
+            <Box sx={{ mt: 3 }}>
               <Button
                 onClick={() => setOpenAdvanced(!openAdvanced)}
                 variant="outlined"
-                sx={{ width: "100%", marginBottom: "10px" }}
+                sx={{
+                  width: "100%",
+                  mb: 1,
+                  borderColor: "#1565c0",
+                  color: "#1565c0"
+                }}
                 startIcon={openAdvanced ? <ExpandLess /> : <ExpandMore />}
               >
-                {openAdvanced ? "Hide Advanced Topics" : "Show Advanced Topics"}
+                {openAdvanced
+                  ? "Hide Advanced Options"
+                  : "Show Advanced Options"}
               </Button>
               <Collapse in={openAdvanced}>
                 <TextField
@@ -261,7 +255,7 @@ const AgentList = ({ agents, onRefresh }) => {
                   minRows={3}
                   InputProps={{
                     startAdornment: (
-                      <Assignment sx={{ color: "gray", marginRight: 1 }} />
+                      <Assignment sx={{ color: "#1565c0", mr: 1 }} />
                     )
                   }}
                 />
@@ -274,7 +268,7 @@ const AgentList = ({ agents, onRefresh }) => {
                   margin="normal"
                   InputProps={{
                     startAdornment: (
-                      <FileCopy sx={{ color: "gray", marginRight: 1 }} />
+                      <FileCopy sx={{ color: "#1565c0", mr: 1 }} />
                     )
                   }}
                 />
@@ -324,19 +318,23 @@ const AgentList = ({ agents, onRefresh }) => {
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions sx={{ padding: "16px", backgroundColor: "#f5f5f5" }}>
+        <DialogActions sx={{ padding: "16px", backgroundColor: "#e3f2fd" }}>
           <Button
             startIcon={<Cancel />}
             onClick={() => setOpenModal(false)}
-            color="secondary"
+            sx={{ color: "#d32f2f", fontWeight: "bold" }}
           >
             Cancel
           </Button>
           <Button
             startIcon={<Save />}
             onClick={handleSubmit}
-            color="primary"
             variant="contained"
+            sx={{
+              fontWeight: "bold",
+              backgroundColor: "#1565c0",
+              "&:hover": { backgroundColor: "#0d47a1" }
+            }}
           >
             Submit
           </Button>

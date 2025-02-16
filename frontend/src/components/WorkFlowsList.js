@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   List,
   ListItem,
@@ -7,20 +7,24 @@ import {
   Button,
   Paper,
   Box,
-  ListItemIcon
+  ListItemIcon,
+  Divider
 } from "@mui/material";
 import AgentChatBox from "./AgentChatBox";
 import { AccountTree, Close } from "@mui/icons-material";
 import ImageDisplay from "./ImageDisplay";
 import VerticalFlow from "../assets/images/VerticalFlow.png";
 
-const WorkFlowsList = ({ workflows, refresh }) => {
-  const [selectedWorkflow, setSelectedWorkflow] = useState(null);
-  const [openChatBox, setOpenChatBox] = useState(false);
+const WorkFlowsList = ({ workflows, onWorkFlowSelected }) => {
+  // const [selectedWorkflow, setSelectedWorkflow] = useState(null);
+  // const [openChatBox, setOpenChatBox] = useState(false);
 
   const handleWorkFlowItem = (workflow) => {
-    setSelectedWorkflow(workflow);
-    setOpenChatBox(true);
+    // setSelectedWorkflow(workflow);
+    console.log('OPEN CHATBOX CALLED', workflow)
+    onWorkFlowSelected(workflow)
+    
+    // setOpenChatBox(true);
   };
 
   return (
@@ -29,31 +33,47 @@ const WorkFlowsList = ({ workflows, refresh }) => {
       {workflows?.length > 0 && (
         <List
           sx={{
-            width: "100%",
-            maxWidth: 400,
-            mx: "auto",
-            maxHeight: "80vh",
-            overflowY: "auto"
+            backgroundColor: "#f8fafc",
+            borderRadius: "10px",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)"
           }}
         >
           {workflows?.map((workflow) => (
-            <ListItem
-              key={workflow?.id}
-              button
-              onClick={() => handleWorkFlowItem(workflow)}
-            >
-              <ListItemIcon sx={{ minWidth: 40 }}>
-                <AccountTree color="action" />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography sx={{ fontWeight: "bold" }}>
-                    {workflow?.name}
-                  </Typography>
-                }
-                secondary={workflow?.user_id}
-              />
-            </ListItem>
+            <Box key={workflow.id}>
+              <ListItem
+                button
+                onClick={() => handleWorkFlowItem(workflow)}
+                sx={{
+                  "&:hover": { backgroundColor: "#e3f2fd" },
+                  padding: "14px 18px",
+                  display: "flex",
+                  alignItems: "center",
+                  transition: "background 0.2s ease-in-out"
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 45 }}>
+                  <AccountTree sx={{ color: "#1565c0", fontSize: "30px" }} />
+                </ListItemIcon>
+
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="body1"
+                      sx={{ fontWeight: "bold", color: "#0d47a1" }}
+                    >
+                      {workflow?.name}
+                    </Typography>
+                  }
+                  secondary={
+                    <Typography variant="body2" sx={{ color: "#546e7a" }}>
+                      {workflow?.user_id}
+                    </Typography>
+                  }
+                />
+              </ListItem>
+
+              <Divider />
+            </Box>
           ))}
         </List>
       )}
@@ -63,74 +83,7 @@ const WorkFlowsList = ({ workflows, refresh }) => {
         <Typography align="center" color="textSecondary">
           No workflows available
         </Typography>
-      )}
-
-      {/* Chatbox Popup */}
-      {openChatBox && (
-        <Paper
-          elevation={3}
-          sx={{
-            position: "fixed",
-            top: 0,
-            right: 0,
-            width: "72vw",
-            height: "100vh",
-            backgroundColor: "#ffffff",
-            boxShadow: "-4px 0px 10px rgba(0,0,0,0.2)",
-            zIndex: 1000,
-            overflowY: "auto",
-            p: 3
-          }}
-        >
-          {/* Workflow Details */}
-          {selectedWorkflow && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                mb: 2
-              }}
-            >
-              <Box>
-                <Typography variant="body1">
-                  <strong>WorkFlow Type:</strong> {"Two Agents Chat"}
-                </Typography>
-              </Box>
-
-              {/* Close Button */}
-              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Close />}
-                  onClick={() => setOpenChatBox(false)}
-                  sx={{ ml: 2 }}
-                >
-                  Close
-                </Button>
-              </Box>
-            </Box>
-          )}
-          <Box
-            sx={{
-              height: "1px",
-              backgroundColor: "rgba(0, 0, 0, 0.1)",
-              width: "100%"
-            }}
-          />
-          {/* Chat Box */}
-          <Box display={"flex"} flexDirection={"row"}>
-            <AgentChatBox agent={selectedWorkflow} />
-            <ImageDisplay
-              src={VerticalFlow}
-              alt="Local Image"
-              width="300px"
-              height="300px"
-            />
-          </Box>
-        </Paper>
-      )}
+      )}      
     </Box>
   );
 };
