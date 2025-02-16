@@ -4,31 +4,19 @@ import {
   ListItem,
   ListItemText,
   Typography,
-  CircularProgress,
-  Alert,
   Button,
   Paper,
   Box,
+  ListItemIcon
 } from "@mui/material";
-import useAPIResponse from "../hooks/useGetAgentList";
 import AgentChatBox from "./AgentChatBox";
+import { AccountTree, Close } from "@mui/icons-material";
+import ImageDisplay from "./ImageDisplay";
+import VerticalFlow from "../assets/images/VerticalFlow.png";
 
-const WorkFlowsList = ({ refresh }) => {
+const WorkFlowsList = ({ workflows, refresh }) => {
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [openChatBox, setOpenChatBox] = useState(false);
-
-  useEffect(() => {
-    console.log("Refreshing workflows list because refresh changed.");
-  }, [refresh]);
-
-  const {
-    response: workflows,
-    loading,
-    error
-  } = useAPIResponse("workflows", {
-    user_id: "guestuser@gmail.com",
-    refreshKey: refresh
-  });
 
   const handleWorkFlowItem = (workflow) => {
     setSelectedWorkflow(workflow);
@@ -37,23 +25,15 @@ const WorkFlowsList = ({ refresh }) => {
 
   return (
     <Box>
-      {/* Loading Indicator */}
-      {loading && (
-        <CircularProgress sx={{ display: "block", margin: "auto" }} />
-      )}
-
-      {/* Error Handling */}
-      {error && <Alert severity="error">{error}</Alert>}
-
       {/* Workflows List */}
-      {!loading && !error && workflows?.length > 0 && (
+      {workflows?.length > 0 && (
         <List
           sx={{
             width: "100%",
             maxWidth: 400,
             mx: "auto",
             maxHeight: "80vh",
-            overflowY: "auto",
+            overflowY: "auto"
           }}
         >
           {workflows?.map((workflow) => (
@@ -61,15 +41,10 @@ const WorkFlowsList = ({ refresh }) => {
               key={workflow?.id}
               button
               onClick={() => handleWorkFlowItem(workflow)}
-              sx={{
-                borderRadius: 2,
-                mb: 1,
-                boxShadow: 1,
-                backgroundColor: "#fff",
-                transition: "0.3s",
-                "&:hover": { backgroundColor: "#f5f5f5" }
-              }}
             >
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <AccountTree color="action" />
+              </ListItemIcon>
               <ListItemText
                 primary={
                   <Typography sx={{ fontWeight: "bold" }}>
@@ -84,7 +59,7 @@ const WorkFlowsList = ({ refresh }) => {
       )}
 
       {/* No Workflows */}
-      {!loading && !error && workflows?.length === 0 && (
+      {workflows?.length === 0 && (
         <Typography align="center" color="textSecondary">
           No workflows available
         </Typography>
@@ -98,7 +73,7 @@ const WorkFlowsList = ({ refresh }) => {
             position: "fixed",
             top: 0,
             right: 0,
-            width: "75vw",
+            width: "72vw",
             height: "100vh",
             backgroundColor: "#ffffff",
             boxShadow: "-4px 0px 10px rgba(0,0,0,0.2)",
@@ -117,11 +92,10 @@ const WorkFlowsList = ({ refresh }) => {
                 mb: 2
               }}
             >
-              <Box>               
+              <Box>
                 <Typography variant="body1">
-                  <strong>WorkFlow Type:</strong>{" "}
-                  {"Two Agents Chat"}
-                </Typography>                
+                  <strong>WorkFlow Type:</strong> {"Two Agents Chat"}
+                </Typography>
               </Box>
 
               {/* Close Button */}
@@ -129,6 +103,7 @@ const WorkFlowsList = ({ refresh }) => {
                 <Button
                   variant="contained"
                   color="primary"
+                  startIcon={<Close />}
                   onClick={() => setOpenChatBox(false)}
                   sx={{ ml: 2 }}
                 >
@@ -137,9 +112,23 @@ const WorkFlowsList = ({ refresh }) => {
               </Box>
             </Box>
           )}
-
+          <Box
+            sx={{
+              height: "1px",
+              backgroundColor: "rgba(0, 0, 0, 0.1)",
+              width: "100%"
+            }}
+          />
           {/* Chat Box */}
-          <AgentChatBox agent={selectedWorkflow} />
+          <Box display={"flex"} flexDirection={"row"}>
+            <AgentChatBox agent={selectedWorkflow} />
+            <ImageDisplay
+              src={VerticalFlow}
+              alt="Local Image"
+              width="300px"
+              height="300px"
+            />
+          </Box>
         </Paper>
       )}
     </Box>

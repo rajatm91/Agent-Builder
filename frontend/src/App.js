@@ -1,23 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
-  Grid,
-  Typography,
-  Paper,
-  Drawer,
   Button,
-  Divider
+  Paper,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+  Divider,
+  styled,
+  CircularProgress,
 } from "@mui/material";
+import {
+  Dashboard as DashboardIcon,
+  Build as BuildIcon,
+  SportsEsports as PlaygroundIcon,
+  ExpandMore as ExpandMoreIcon,
+  Group,
+  Memory,
+  AccountTree,
+} from "@mui/icons-material";
 import ChatBox from "./components/ChatBox";
 import AgentList from "./components/AgentList";
 import WorkFlowsList from "./components/WorkFlowsList";
 import ModelsList from "./components/ModelsList";
 
+// Custom styled components for better UI
+const StyledAccordion = styled(Accordion)(({ theme }) => ({
+  margin: "8px 0",
+  borderRadius: "8px",
+  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+  "&:before": {
+    display: "none",
+  },
+}));
+
+const StyledButton = styled(Button)(({ theme, selected }) => ({
+  textTransform: "capitalize",
+  fontWeight: selected ? "bold" : "normal",
+  backgroundColor: selected ? theme.palette.primary.main : "transparent",
+  color: selected ? "#fff" : theme.palette.primary.main,
+  "&:hover": {
+    backgroundColor: selected ? theme.palette.primary.dark : "rgba(25, 118, 210, 0.1)",
+  },
+}));
+
 const App = () => {
   const [refreshAgent, setRefreshAgent] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openItem, setOpenedItem] = useState("");
   const [refreshAgentList, setRefreshAgentList] = useState([]);
+  const [selectedTab, setSelectedTab] = useState("Build");
+  const [expanded, setExpanded] = useState(false);
+  const [buildingBlocks, setBuildingBlocks] = useState({
+    agents: [],
+    models: [],
+    workflows: [],
+    skills: [],
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Fetch building blocks data from the API
+  useEffect(() => {
+    const fetchBuildingBlocks = async () => {
+      try {
+        const response = await fetch("http://localhost:8081/api/building_blocks");
+        const data = await response.json();
+        setBuildingBlocks(data);
+      } catch (error) {
+        console.error("Error fetching building blocks:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBuildingBlocks();
+  }, []);
 
   const handleCreateAgent = (details) => {
     setRefreshAgent(!refreshAgent);
@@ -27,146 +83,176 @@ const App = () => {
     setRefreshAgentList(!refreshAgentList);
   };
 
-  const openSideBar = (item) => {
-    setOpenedItem(item);
-    setSidebarOpen(true);
+  const handleChange = (panel) => (event, isExpanded) => {
+    setExpanded(isExpanded ? panel : false);
   };
 
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <Box
-      sx={{
-        width: "100vw",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "linear-gradient(135deg, #e0f7fa, #80deea)",
-        fontFamily: '"Roboto", sans-serif'
-      }}
-    >
-      {/* Header Section with Icons and Title */}
+    <Box sx={{ display: "flex", height: "100vh", flexDirection: "column", backgroundColor: "#f9fafb" }}>
+      {/* Header Section */}
       <Paper
         sx={{
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
-          py: 2,
-          px: 4,
-          mb: 3,
+          padding: "16px 32px",
           backgroundColor: "#ffffff",
-          borderRadius: 2,
-          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)"
+          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: 0,
         }}
       >
-        <Typography
-          variant="h4"
-          align="left"
-          sx={{ color: "#00796b", fontWeight: 600, flexGrow: 1 }}
-        >
-          Agent of Agents
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
+          <DashboardIcon sx={{ color: "#1976d2", mr: 1 }} />
+          <Typography variant="h6" sx={{ fontWeight: "bold", color: "#1976d2" }}>
+            Agent of Agents
+          </Typography>
+        </Box>
 
         <Box>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => openSideBar("model")}
-            sx={{ ml: 2, textTransform: "capitalize", borderRadius: 2 }}
+          <StyledButton
+            selected={selectedTab === "Build"}
+            startIcon={<BuildIcon />}
+            onClick={() => setSelectedTab("Build")}
+            sx={{ mx: 1 }}
           >
-            Models List
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => openSideBar("workflows")}
-            sx={{ ml: 2, textTransform: "capitalize", borderRadius: 2 }}
+            Build
+          </StyledButton>
+          <StyledButton
+            selected={selectedTab === "Playground"}
+            startIcon={<PlaygroundIcon />}
+            onClick={() => setSelectedTab("Playground")}
+            sx={{ mx: 1 }}
           >
-            Agents List
-          </Button>
+            Playground
+          </StyledButton>
         </Box>
       </Paper>
 
-      {/* Main Content Section */}
-      <Box sx={{ flex: 1, overflow: "auto", px: 4, pb: 4 }}>
-        <Grid container spacing={3} sx={{ height: "100%" }}>
-          {/* ChatBox Section */}
-          <Grid item xs={12} md={9}>
-            <ChatBox onCreateAgent={handleCreateAgent} />
-          </Grid>
-          {/* Agent List Section */}
-          <Grid item xs={12} md={3}>
-            <WorkFlowsList refresh={refreshAgent} />
-          </Grid>
-        </Grid>
-      </Box>
+      <Divider sx={{ backgroundColor: "rgba(0, 0, 0, 0.1)" }} />
 
-      {/* Sidebar for Workflow & Models List */}
-      <Drawer
-        anchor="left"
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        sx={{
-          "& .MuiDrawer-paper": {
-            width: "320px",
-            padding: "24px",
-            background: "#ffffff",
-            boxShadow: "2px 0 10px rgba(0,0,0,0.2)",
-            borderRadius: "8px"
-          }
-        }}
-      >
-        {/* Workflow Sidebar Header */}
-        {openItem === "workflows" ? (
-          <Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 3
-              }}
+      {/* Main Content */}
+      <Box sx={{ display: "flex", flex: 1 }}>
+        {/* Left Panel */}
+        <Box
+          sx={{
+            backgroundColor: "#ffffff",
+            boxShadow: "2px 0 5px rgba(0, 0, 0, 0.1)",
+            p: 2,
+            width: "300px",
+          }}
+        >
+          {selectedTab === "Build" && (
+            <>
+              {/* Agents Accordion */}
+              {buildingBlocks.agents.length > 0 && (
+                <StyledAccordion
+                  expanded={expanded === "agents"}
+                  onChange={handleChange("agents")}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    id="agents-header"
+                  >
+                    <Group sx={{ mr: 1, color: "#1976d2" }} />
+                    <Typography sx={{ fontWeight: "bold" }}>Agents</Typography>
+                  </AccordionSummary>
+                  <Divider sx={{ width: "100%" }} />
+                  <AccordionDetails>
+                    <AgentList
+                      agents={buildingBlocks.agents}
+                      onRefresh={handleRefreshAgentListAfterEdit}
+                    />
+                  </AccordionDetails>
+                </StyledAccordion>
+              )}
+
+              {/* Models Accordion */}
+              {buildingBlocks.models.length > 0 && (
+                <StyledAccordion
+                  expanded={expanded === "models"}
+                  onChange={handleChange("models")}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    id="models-header"
+                  >
+                    <Memory sx={{ mr: 1, color: "#1976d2" }} />
+                    <Typography sx={{ fontWeight: "bold" }}>Models</Typography>
+                  </AccordionSummary>
+                  <Divider sx={{ width: "100%" }} />
+                  <AccordionDetails>
+                    <ModelsList models={buildingBlocks.models} />
+                  </AccordionDetails>
+                </StyledAccordion>
+              )}
+
+              {/* Workflows Accordion */}
+              {buildingBlocks.workflows.length > 0 && (
+                <StyledAccordion
+                  expanded={expanded === "workflows"}
+                  onChange={handleChange("workflows")}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    id="workflows-header"
+                  >
+                    <AccountTree sx={{ mr: 1, color: "#1976d2" }} />
+                    <Typography sx={{ fontWeight: "bold" }}>Workflows</Typography>
+                  </AccordionSummary>
+                  <Divider sx={{ width: "100%" }} />
+                  <AccordionDetails>
+                    <WorkFlowsList
+                      workflows={buildingBlocks.workflows}
+                      refresh={refreshAgent}
+                    />
+                  </AccordionDetails>
+                </StyledAccordion>
+              )}
+            </>
+          )}
+          {selectedTab === "Playground" && (
+            <StyledAccordion
+              expanded={expanded === "workflows"}
+              onChange={handleChange("workflows")}
             >
-              <Typography variant="h6" sx={{ fontWeight: 500, color: "#00796b" }}>
-                Agents
-              </Typography>
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => setSidebarOpen(false)}
-                sx={{ borderRadius: 2 }}
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                id="workflows-header"
               >
-                Close
-              </Button>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <AgentList onRefresh={handleRefreshAgentListAfterEdit} />
-          </Box>
-        ) : (
-          <Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 3
-              }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 500, color: "#00796b" }}>
-                Models
-              </Typography>
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => setSidebarOpen(false)}
-                sx={{ borderRadius: 2 }}
-              >
-                Close
-              </Button>
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-            <ModelsList />
-          </Box>
-        )}
-      </Drawer>
+                <AccountTree sx={{ mr: 1, color: "#1976d2" }} />
+                <Typography sx={{ fontWeight: "bold" }}>Workflows</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <WorkFlowsList workflows={buildingBlocks.workflows} />
+              </AccordionDetails>
+            </StyledAccordion>
+          )}
+        </Box>
+
+        {/* Vertical Separator */}
+        <Divider orientation="vertical" flexItem sx={{ backgroundColor: "rgba(0, 0, 0, 0.1)" }} />
+
+        {/* Right Panel (ChatBox) */}
+        <Box sx={{ flex: 1, backgroundColor: "#f9fafb", p: 3 }}>
+          {selectedTab === "Build" && (
+            <ChatBox onCreateAgent={handleCreateAgent} />
+          )}
+        </Box>
+      </Box>
     </Box>
   );
 };

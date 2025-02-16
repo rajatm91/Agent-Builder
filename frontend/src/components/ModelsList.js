@@ -4,99 +4,112 @@ import {
   ListItem,
   ListItemText,
   Icon,
-  Typography,
-  CircularProgress,
-  Alert,
+  Typography,  
   Collapse,
-  Divider,
-  Paper,
-  Box
+  Divider,  
+  Box,
+  ListItemIcon
 } from "@mui/material";
-import useAPIResponse from "../hooks/useGetAgentList";
+import { ExpandMore, ExpandLess, Memory } from "@mui/icons-material"; // Import the icons
 
-const ModelsList = () => {
+const ModelsList = ({models}) => {
   const [selectedModel, setSelectedModel] = useState(null);
-
-  const { response: models, loading, error } = useAPIResponse("models", {
-    user_id: "guestuser@gmail.com"
-  });
 
   const handleModelClick = (model) => {
     setSelectedModel(selectedModel?.id === model.id ? null : model); // Toggle accordion
   };
 
   return (
-    <Box sx={{ maxWidth: 500, mx: "auto", mt: 3 }}>
-      {/* Loading Indicator */}
-      {loading && <CircularProgress sx={{ display: "block", mx: "auto", my: 3 }} />}
-
-      {/* Error Message */}
-      {error && <Alert severity="error">{error}</Alert>}
-
+    <Box>
       {/* Models List */}
-      {!loading && !error && models?.length > 0 && (
-        <Paper elevation={3} sx={{ borderRadius: 2, p: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold", textAlign: "center", mb: 2 }} color="primary">
-            Available Models
-          </Typography>
-          <List>
-            {models.map((model) => (
-              <Box key={model.id}>
-                {/* Model List Item */}
-                <ListItem 
-                  button 
-                  onClick={() => handleModelClick(model)}
+      {models?.length > 0 && (
+        <List>
+          {models.map((model) => (
+            <Box key={model.id}>
+              {/* Model List Item */}
+              <ListItem
+                button
+                onClick={() => handleModelClick(model)}
+                sx={{
+                  borderRadius: 1,
+                  transition: "0.3s",
+                  "&:hover": { backgroundColor: "#f5f5f5" }
+                }}
+              >
+                {/* Icon */}
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  <Memory color="action" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                      {model.model}
+                    </Typography>
+                  }
+                  secondary={model.description}
+                />
+
+                {/* Expand/Collapse Icon */}
+                <Icon
                   sx={{
-                    borderRadius: 1,
-                    transition: "0.3s",
-                    "&:hover": { backgroundColor: "#f5f5f5" }
+                    ml: "auto",
+                    transform:
+                      selectedModel?.id === model.id
+                        ? "rotate(360deg)"
+                        : "rotate(0deg)",
+                    transition: "transform 0.3s"
                   }}
                 >
-                  {/* <Icon sx={{ mr: 2, color: "primary.main" }}>
-                    <ModelIcon />
-                  </Icon> */}
-                  <ListItemText
-                    primary={
-                      <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                        {model.model}
-                      </Typography>
-                    }
-                    secondary={model.description}
-                  />
-                  {/* {selectedModel?.id === model.id ? <ExpandLess /> : <ExpandMore />} */}
-                </ListItem>
-                
-                {/* Divider */}
-                <Divider />
+                  {selectedModel?.id === model.id ? (
+                    <ExpandLess />
+                  ) : (
+                    <ExpandMore />
+                  )}
+                </Icon>
+              </ListItem>
 
-                {/* Model Details (Collapsible Section) */}
-                <Collapse in={selectedModel?.id === model.id} timeout="auto" unmountOnExit>
-                  <Box sx={{ pl: 4, py: 2, backgroundColor: "#f9f9f9", borderRadius: 1 }}>
-                    <Typography variant="body2">
-                      <strong>Model:</strong> {model.model}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>API Type:</strong> {model.api_type || "N/A"}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Base URL:</strong> {model.base_url || "N/A"}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>API Version:</strong> {model.api_version || "N/A"}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Created At:</strong> {new Date(model.created_at).toLocaleString()}
-                    </Typography>
-                  </Box>
-                </Collapse>
-              </Box>
-            ))}
-          </List>
-        </Paper>
+              {/* Divider */}
+              <Divider />
+
+              {/* Model Details (Collapsible Section) */}
+              <Collapse
+                in={selectedModel?.id === model.id}
+                timeout="auto"
+                unmountOnExit
+              >
+                <Box
+                  sx={{
+                    pl: 4,
+                    py: 2,
+                    backgroundColor: "#f9f9f9",
+                    borderRadius: 1
+                  }}
+                >
+                  <Typography variant="body2">
+                    <strong>Model:</strong> {model.model}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>API Type:</strong> {model.api_type || "N/A"}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Base URL:</strong> {model.base_url || "N/A"}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>API Version:</strong> {model.api_version || "N/A"}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Created At:</strong>{" "}
+                    {new Date(model.created_at).toLocaleString()}
+                  </Typography>
+                </Box>
+              </Collapse>
+            </Box>
+          ))}
+        </List>
       )}
 
       {/* No Models Available */}
-      {!loading && !error && models?.length === 0 && (
+      {models?.length === 0 && (
         <Typography align="center" color="textSecondary">
           No models available
         </Typography>

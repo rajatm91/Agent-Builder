@@ -4,10 +4,20 @@ import {
   Button,
   Box,
   Typography,
-  IconButton,
   CircularProgress,
+  Paper,
+  keyframes,
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
+import PoweredBy from "./PoweredBy";
+import { Send } from "@mui/icons-material";
+
+// Define a pulsating animation
+const pulsate = keyframes`
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+`;
 
 const ChatBox = ({ onCreateAgent }) => {
   const [message, setMessage] = useState("");
@@ -58,7 +68,10 @@ const ChatBox = ({ onCreateAgent }) => {
         onCreateAgent(agentDetails);
         setMessages((prev) => [
           ...prev,
-          { text: `Agent creation Successfully with name ${data?.name}.`, isUser: false },
+          {
+            text: `Agent creation Successfully with name ${data?.name}.`,
+            isUser: false,
+          },
         ]);
       } else {
         setMessages((prev) => [
@@ -91,10 +104,10 @@ const ChatBox = ({ onCreateAgent }) => {
       sx={{
         display: "flex",
         flexDirection: "column",
-        justifyContent: "flex-end",
-        width: "100%",
-        maxWidth: "100vw",       
-        fontFamily: "'Roboto', sans-serif", // Updated font
+        height: "100%",
+        backgroundColor: "#f9fafb",
+        borderRadius: 2,
+        overflow: "hidden",
       }}
     >
       {/* Chat Container */}
@@ -102,13 +115,8 @@ const ChatBox = ({ onCreateAgent }) => {
         sx={{
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#ffffff",
-          boxShadow: 3,
-          borderRadius: 2,
-          p: 2,
-          height: "80vh",
+          flexGrow: 1,
           overflow: "hidden",
-          border: "1px solid #ddd", // Added subtle border
         }}
       >
         {/* Messages Scrollable Area */}
@@ -116,8 +124,12 @@ const ChatBox = ({ onCreateAgent }) => {
           sx={{
             flexGrow: 1,
             overflowY: "auto",
-            paddingRight: 1,
-            maxHeight: "calc(100% - 80px)",
+            padding: 2,
+            backgroundColor: "#ffffff",
+            borderRadius: 2,
+            margin: 1,
+            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+            maxHeight: "calc(100vh - 320px)",
           }}
         >
           {messages.length === 0 ? (
@@ -129,13 +141,25 @@ const ChatBox = ({ onCreateAgent }) => {
                 height: "100%",
               }}
             >
-              <Typography variant="h6" color="textSecondary">
-                Start chatting by typing a message...
+              {/* Pulsating Text Animation */}
+              <Typography
+                variant="h6"
+                color="textSecondary"
+                sx={{
+                  animation: `${pulsate} 1.5s infinite`,
+                  fontWeight: 500,
+                }}
+              >
+                Start chatting...
               </Typography>
             </Box>
           ) : (
             messages.map((msg, index) => (
-              <MessageBubble key={index} message={msg.text} isUser={msg.isUser} />
+              <MessageBubble
+                key={index}
+                message={msg.text}
+                isUser={msg.isUser}
+              />
             ))
           )}
 
@@ -144,31 +168,37 @@ const ChatBox = ({ onCreateAgent }) => {
 
         {/* Show "Bot is typing..." message */}
         {loading && (
-          <Box sx={{ display: "flex", alignItems: "center", marginTop: 1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              marginTop: 1,
+              paddingLeft: 2,
+            }}
+          >
             <CircularProgress size={16} sx={{ marginRight: 1 }} />
-            <Typography variant="body2" color="textSecondary" sx={{ fontWeight: 500 }}>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{ fontWeight: 500 }}
+            >
               {typingMessage}
             </Typography>
           </Box>
         )}
 
         {/* Chat Input */}
-        <Box
+        <Paper
           sx={{
             display: "flex",
             alignItems: "center",
             p: 2,
             borderTop: "1px solid #ddd",
             backgroundColor: "#ffffff",
-            boxShadow: "inset 0 -1px 0 rgba(0, 0, 0, 0.1)", // Added subtle shadow
+            boxShadow: "0px -2px 4px rgba(0, 0, 0, 0.1)",
+            borderRadius: 0,
           }}
         >
-          <IconButton color="primary">
-            {/* <Mic /> */}
-          </IconButton>
-          <IconButton color="primary">
-            {/* <AttachFile /> */}
-          </IconButton>
           <TextField
             fullWidth
             variant="outlined"
@@ -177,13 +207,13 @@ const ChatBox = ({ onCreateAgent }) => {
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
             sx={{
-              borderRadius: 2, // Rounded corners for the input box
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                  borderColor: "#ddd", // Subtle border for input
+              borderRadius: 2,
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#ddd",
                 },
-                '&:hover fieldset': {
-                  borderColor: "#1976d2", // Highlight border color on focus
+                "&:hover fieldset": {
+                  borderColor: "#1976d2",
                 },
               },
             }}
@@ -191,17 +221,26 @@ const ChatBox = ({ onCreateAgent }) => {
           <Button
             variant="contained"
             color="primary"
+            startIcon={<Send />}
             onClick={handleSend}
             sx={{
               ml: 2,
-              textTransform: "none", // Prevent text capitalization in button
+              textTransform: "none",
               padding: "8px 16px",
+              borderRadius: 2,
+              boxShadow: "none",
+              "&:hover": {
+                backgroundColor: "#1565c0",
+              },
             }}
           >
             Send
           </Button>
-        </Box>
+        </Paper>
       </Box>
+
+      {/* Powered By Section */}
+      <PoweredBy />
     </Box>
   );
 };
