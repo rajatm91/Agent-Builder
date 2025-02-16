@@ -3,9 +3,9 @@ import json
 import os
 import queue
 import threading
+from fastapi import APIRouter
 
-
-import redis.asyncio as redisconn
+import redis.asyncio as redis_conn
 import traceback
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from openai import OpenAIError
 
 from agent_builder.chatmanager import WebSocketConnectionManager
-from agent_builder.database import DBManager, workflow_from_id
+from agent_builder.database import DBManager, workflow_from_id, list_entity, create_entity, delete_entity
 from agent_builder.utils import init_app_folders, check_and_cast_datetime_fields, md5_hash, test_model, cache_response, \
     get_cached_response
 from loguru import logger
@@ -81,7 +81,7 @@ REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 async def lifespan(app: FastAPI):
     print("***** App started *****")
     global redis
-    redis = await redisconn.Redis(host=REDIS_HOST, port=6379, decode_responses=True)
+    redis = await redis_conn.Redis(host=REDIS_HOST, port=6379, decode_responses=True)
     print("✅ Redis connected!")
     managers["chat"] = ChatManager(message_queue=message_queue)
     dbmanager.create_db_and_tables()
@@ -109,9 +109,9 @@ app.add_middleware(
 )
 
 
-api = FastAPI(root_path="/api")
+api = APIRouter(prefix="/api")
 # mount an api route such that the main route serves the ui and the /api
-app.mount("/api", api)
+#app.mount("/api", api)
 
 # app.mount("/", StaticFiles(directory=ui_folder_path, html=True), name="ui")
 # api.mount(
@@ -123,59 +123,59 @@ app.mount("/api", api)
 
 # manage websocket connections
 
-
-def create_entity(model: Any, model_class: Any, filters: dict = None):
-    """Create a new entity"""
-    model = check_and_cast_datetime_fields(model)
-    try:
-        response: Response = dbmanager.upsert(model)
-        return response.model_dump(mode="json")
-
-    except Exception as ex_error:
-        print(ex_error)
-        return {
-            "status": False,
-            "message": f"Error occurred while creating {model_class.__name__}: "
-            + str(ex_error),
-        }
-
-
-def list_entity(
-    model_class: Any,
-    filters: dict = None,
-    return_json: bool = True,
-    order: str = "desc",
-):
-    """List all entities for a user"""
-    return dbmanager.get(
-        model_class, filters=filters, return_json=return_json, order=order
-    )
-
-
-def delete_entity(model_class: Any, filters: dict = None):
-    """Delete an entity"""
-    return dbmanager.delete(filters=filters, model_class=model_class)
+#
+# def create_entity(model: Any, model_class: Any, filters: dict = None):
+#     """Create a new entity"""
+#     model = check_and_cast_datetime_fields(model)
+#     try:
+#         response: Response = dbmanager.upsert(model)
+#         return response.model_dump(mode="json")
+#
+#     except Exception as ex_error:
+#         print(ex_error)
+#         return {
+#             "status": False,
+#             "message": f"Error occurred while creating {model_class.__name__}: "
+#             + str(ex_error),
+#         }
+#
+#
+# def list_entity(
+#     model_class: Any,
+#     filters: dict = None,
+#     return_json: bool = True,
+#     order: str = "desc",
+# ):
+#     """List all entities for a user"""
+#     return dbmanager.get(
+#         model_class, filters=filters, return_json=return_json, order=order
+#     )
+#
+#
+# def delete_entity(model_class: Any, filters: dict = None):
+#     """Delete an entity"""
+#     return dbmanager.delete(filters=filters, model_class=model_class)
 
 
 @api.get("/skills")
 async def list_skills(user_id: str):
     """List all skills for a user"""
     filters = {"user_id": user_id}
-    return list_entity(Skill, filters=filters)
+    return list_entity(dbmanager, Skill, filters=filters)
 
 
 @api.post("/skills")
 async def create_skill(skill: Skill):
     """Create a new skill"""
     filters = {"user_id": skill.user_id}
-    return create_entity(skill, Skill, filters=filters)
+    return create_entity(dbmanager,skill, Skill, filters=filters)
 
 
 @api.delete("/skills/delete")
 async def delete_skill(skill_id: int, user_id: str):
     """Delete a skill"""
     filters = {"id": skill_id, "user_id": user_id}
-    return delete_entity(Skill, filters=filters)
+    return delete_entity( dbmanager,Skill, filters=filters)
 
 
 @api.get("/models")

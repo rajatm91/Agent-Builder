@@ -7,6 +7,7 @@ from typing import Any
 from alembic import command, util
 from alembic.config import Config
 from loguru import logger
+from . import DBManager
 from .system_prompt import AGENT_CREATOR_SYSTEM_MESSAGE
 
 
@@ -22,9 +23,43 @@ from ..datamodel import (
     Model,
     Skill,
     Workflow,
-    WorkflowAgentLink,
+    WorkflowAgentLink, Response,
 )
+from ..utils import check_and_cast_datetime_fields
 
+
+def create_entity(dbmanager: DBManager, model: Any, model_class: Any, filters: dict = None):
+    """Create a new entity"""
+    model = check_and_cast_datetime_fields(model)
+    try:
+        response: Response = dbmanager.upsert(model)
+        return response.model_dump(mode="json")
+
+    except Exception as ex_error:
+        print(ex_error)
+        return {
+            "status": False,
+            "message": f"Error occurred while creating {model_class.__name__}: "
+            + str(ex_error),
+        }
+
+
+def list_entity(
+    dbmanager: DBManager,
+    model_class: Any,
+    filters: dict = None,
+    return_json: bool = True,
+    order: str = "desc",
+):
+    """List all entities for a user"""
+    return dbmanager.get(
+        model_class, filters=filters, return_json=return_json, order=order
+    )
+
+
+def delete_entity(dbmanager: DBManager, model_class: Any, filters: dict = None):
+    """Delete an entity"""
+    return dbmanager.delete(filters=filters, model_class=model_class)
 
 
 def workflow_from_id(workflow_id: int, dbmanager: Any):
