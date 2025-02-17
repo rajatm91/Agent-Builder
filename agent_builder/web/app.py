@@ -19,18 +19,15 @@ from agent_builder.utils.tools import extract_agent_parameters, create_retrieval
     generate_prompt
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
-
-
-from agent_builder.chatmanager import WebSocketConnectionManager
+from agent_builder.manager.chatmanager import WebSocketConnectionManager
 from agent_builder.database import DBManager, workflow_from_id
 from agent_builder.utils import init_app_folders, md5_hash, cache_response, \
     get_cached_response
 from loguru import logger
 
 
-from agent_builder.chatmanager import ChatManager
+from agent_builder.manager.chatmanager import ChatManager
 from agent_builder.datamodel import Response, Message
 
 managers = {"chat": None, "user_prompt": ""}
@@ -256,7 +253,7 @@ async def get_building_blocks() -> BuildingBlocks:
                               agents=agents.json()["data"], workflows=workflows.json()["data"])
     return response
 
-app.include_router(api)
+
 
 
 # manage websocket connections
@@ -271,14 +268,14 @@ async def process_socket_message(data: dict, websocket: WebSocket, client_id: st
         managers["user_prompt"] = data['data'].get("content", None)
         cached_response = await get_cached_response(redis, data['data'].get("content", None))
         print(f"#### cache response : {cached_response}")
-        if cached_response:
-           response = cached_response
-        else:
-          response = await run_session_workflow(
-            message=user_message, session_id=session_id, workflow_id=workflow_id
+        # if cached_response:
+        #    response = cached_response
+        # else:
+        response = await run_session_workflow(
+        message=user_message, session_id=session_id, workflow_id=workflow_id
         )
-          user_prompt = managers.get("user_prompt", None)
-          if response["data"]["content"]:
+        user_prompt = managers.get("user_prompt", None)
+        if response["data"]["content"]:
             await cache_response(redis, user_prompt, response)
         response_socket_message = {
             "type": "agent_response",
@@ -299,3 +296,6 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         print(f"Client #{2} is disconnected")
         await websocket_manager.disconnect(websocket)
+
+
+app.include_router(api)

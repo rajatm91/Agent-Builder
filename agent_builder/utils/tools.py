@@ -1,7 +1,6 @@
 import json
 import os
-from fastapi import HTTPException
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, model_validator
 import openai
 from typing import Union, List, Literal, Optional, Self
 from sqlmodel import Session

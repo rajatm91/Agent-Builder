@@ -8,15 +8,11 @@ from alembic import command, util
 from alembic.config import Config
 from loguru import logger
 
-
-from .system_prompt import AGENT_CREATOR_SYSTEM_MESSAGE
-
-
 from sqlmodel import Session, create_engine, text
 
 from autogen.agentchat import AssistantAgent
 
-from ..datamodel import (
+from agent_builder.datamodel import (
     Agent,
     AgentConfig,
     AgentType,
@@ -24,8 +20,7 @@ from ..datamodel import (
     Model,
     Skill,
     Workflow,
-    WorkflowAgentLink, Response,
-)
+    WorkflowAgentLink, )
 
 
 
@@ -225,7 +220,7 @@ def init_db_samples(dbmanager: Any):
         human_input_mode="NEVER",
         max_consecutive_auto_reply=25,
         system_message=AssistantAgent.DEFAULT_SYSTEM_MESSAGE,
-        code_execution_config=CodeExecutionConfigTypes.none,
+        code_execution_config=CodeExecutionConfigTypes.local,
         llm_config={},
     )
 
