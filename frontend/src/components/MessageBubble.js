@@ -2,9 +2,10 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { Person, SmartToy } from "@mui/icons-material";
 
-// Helper function to replace ** with <strong> tags
 const formatBotMessage = (message) => {
-  return message.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  return message
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\n/g, "<br>"); 
 };
 
 const MessageBubble = ({ message, isUser }) => {
