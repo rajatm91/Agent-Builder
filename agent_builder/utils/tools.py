@@ -1,7 +1,7 @@
 import json
 import os
 from fastapi import HTTPException
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, field_validator
 import openai
 from typing import Union, List, Literal, Optional, Self
 from sqlmodel import Session
@@ -94,6 +94,7 @@ def extract_agent_parameters(user_input, conversation_state):
     ### **Your Task**
     - Extract **only** the valid details from the user's input.
     - **Do NOT assume a name if only a purpose is given**.
+    - **If a website provide as knowledge hub , ensure to prepend the url with https://
     - **If all required details (agent_name & knowledge_hub) are present, return `"status": "final_confirmation"`**.
     - If any required detail is missing, return `"status": "further_question"` and **ask only for the missing detail**.
     - Always return a **structured JSON** response.

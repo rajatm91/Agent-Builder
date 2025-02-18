@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum  import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from sqlalchemy import ForeignKey, Integer
 from sqlmodel import (
     JSON,
@@ -145,7 +145,24 @@ class RetrieverConfig(SQLModel, table=False):
     model: Optional[str] = Field(default="gpt-4o")
     get_or_create: bool
     customize_prompt: Optional[str] = None
-    customize_answer_prefix: Optional[str] = None    
+    customize_answer_prefix: Optional[str] = None
+
+    @field_validator("docs_path", mode='before')
+    @classmethod
+    def validate_docs_path(cls, value: Union[List[str], str]) -> Union[List[str], str]:
+
+        if isinstance(value, list):
+            result = []
+            for elem in value:
+                if elem.startswith("www."):
+                    result.append(f"https://{elem}")
+            return result
+        else:
+            if value.startswith("www."):
+                return f"https://{value}"
+        return value
+
+
 
 
 
