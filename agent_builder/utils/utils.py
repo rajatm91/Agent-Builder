@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import List, Dict, Any
 import re
 
-from agent_builder.datamodel import Model, CodeExecutionConfigTypes, Skill
+from agent_builder.database import DBManager
+from agent_builder.datamodel import Model, CodeExecutionConfigTypes, Skill, Response
 from autogen.oai.client import ModelClient, OpenAIWrapper
 from autogen.coding import DockerCommandLineCodeExecutor, LocalCommandLineCodeExecutor
 from loguru import logger
@@ -430,3 +431,36 @@ async def cache_response(redis, prompt: str, response: str):
     """Store response in Redis cache with expiration"""
     json_val = json.dumps(response)
     await redis.set(prompt, json_val, ex=3600)
+
+def create_entity(dbmanager: DBManager, model: Any, model_class: Any, filters: dict = None):
+    """Create a new entity"""
+    model = check_and_cast_datetime_fields(model)
+    try:
+        response: Response = dbmanager.upsert(model)
+        return response.model_dump(mode="json")
+
+    except Exception as ex_error:
+        print(ex_error)
+        return {
+            "status": False,
+            "message": f"Error occurred while creating {model_class.__name__}: "
+            + str(ex_error),
+        }
+
+
+def list_entity(
+    dbmanager: DBManager,
+    model_class: Any,
+    filters: dict = None,
+    return_json: bool = True,
+    order: str = "desc",
+):
+    """List all entities for a user"""
+    return dbmanager.get(
+        model_class, filters=filters, return_json=return_json, order=order
+    )
+
+
+def delete_entity(dbmanager: DBManager, model_class: Any, filters: dict = None):
+    """Delete an entity"""
+    return dbmanager.delete(filters=filters, model_class=model_class)
