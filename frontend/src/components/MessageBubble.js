@@ -3,6 +3,12 @@ import { Box, Typography } from "@mui/material";
 import { formatMessage } from "../utils/userDetails";
 import { Person, SmartToy } from "@mui/icons-material";
 
+const formatBotMessage = (message) => {
+  return message
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\n/g, "<br>"); 
+};
+
 const MessageBubble = ({ message, isUser }) => {
   return (
     <Box
@@ -52,7 +58,7 @@ const MessageBubble = ({ message, isUser }) => {
             fontWeight: isUser ? 500 : 400,
           }}
         >
-          {formatMessage(message)}
+          {formatBotMessage(message)}
         </Typography>
       </Box>
 

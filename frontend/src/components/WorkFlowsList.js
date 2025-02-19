@@ -8,12 +8,11 @@ import {
   Paper,
   Box,
   ListItemIcon,
-  Divider
+  Divider,
+  IconButton
 } from "@mui/material";
 import AgentChatBox from "./AgentChatBox";
-import { AccountTree, Close } from "@mui/icons-material";
-import ImageDisplay from "./ImageDisplay";
-import VerticalFlow from "../assets/images/VerticalFlow.png";
+import { AccountTree, ArrowRightAltRounded,  Close} from "@mui/icons-material";
 
 const WorkFlowsList = ({ workflows, refresh }) => {
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
@@ -60,6 +59,16 @@ const WorkFlowsList = ({ workflows, refresh }) => {
                   }
                   secondary={workflow?.user_id}
                 />
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleWorkFlowItem(workflow)
+                  }}
+                  color="primary"
+                  sx={{ marginLeft: "8px" }}
+                >                  
+                  <ArrowRightAltRounded color="action" />
+                </IconButton>
               </ListItem>
               <Divider />
             </Box>

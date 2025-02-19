@@ -281,8 +281,8 @@ async def process_socket_message(data: dict, websocket: WebSocket, client_id: st
         response = await run_session_workflow(
         message=user_message, session_id=session_id, workflow_id=workflow_id
         )
-        user_prompt = managers.get("user_prompt", None)
-        if response["data"]["content"]:
+        user_prompt = managers.get("user_prompt", None)    
+        if response["status"] and response["data"]["content"]:
             await cache_response(redis, user_prompt, response)
         response_socket_message = {
             "type": "agent_response",
