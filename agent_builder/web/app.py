@@ -253,7 +253,7 @@ async def get_building_blocks() -> BuildingBlocks:
 
     agents =await client.get("http://localhost:8081/api/agents?user_id=guestuser@gmail.com")
     workflows = await client.get("http://localhost:8081/api/workflows?user_id=guestuser@gmail.com")
-    knowledge_hub = await client.get("http://localhost:8081/api/workflows?user_id=guestuser@gmail.com")
+    knowledge_hub = await client.get("http://localhost:8081/api/knowledgehub?user_id=guestuser@gmail.com")
 
     response = BuildingBlocks(skills=skills.json()["data"], models=models.json()["data"],
                               agents=agents.json()["data"], knowledgehub=knowledge_hub.json()["data"] ,

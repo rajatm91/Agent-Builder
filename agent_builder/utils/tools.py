@@ -1,13 +1,14 @@
 import json
 import os
-from fastapi import HTTPException
+from pathlib import Path
+import re
 from pydantic import BaseModel, Field, model_validator, field_validator
 import openai
 from typing import Union, List, Literal, Optional, Self
 from sqlmodel import Session
 from agent_builder.database.database_manager import DBManager
 from agent_builder.datamodel import RetrieverConfig, AgentConfig, CodeExecutionConfigTypes, Agent, AgentType, Workflow, \
-    Model, AgentClassification
+    Model, AgentClassification, KnowledgeHubType, KnowledgeHub
 from dotenv import load_dotenv
 
 
@@ -40,8 +41,6 @@ class ResponseFormat(BaseModel):
             raise ValueError("For status further_question, further_question is mandatory")
 
         return self
-
-
 
 
 
@@ -176,6 +175,44 @@ def extract_agent_parameters(user_input, conversation_state):
     return response.choices[0].message.content
 
 
+def identify_input_type(input_str: str):
+    """
+    Identifies if the input is a website (URL), directory, or file using pathlib.
+
+    Args:
+        input_str (str): The input string to classify.
+
+    Returns:
+        str: One of 'website', 'directory', 'file', or 'unknown'.
+    """
+
+    # Check if it's a website (URL)
+    url_pattern = re.compile(
+        r'^(https?://)?(www\.)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(/.*)?$'
+    )
+    if url_pattern.match(input_str):
+        return "website"
+
+    # Use Pathlib to check for file/directory
+    path = Path(input_str)
+
+    if path.is_dir():
+        return "directory"
+
+    if path.is_file():
+        return "file"
+
+    # If the path doesn't exist, infer type based on format
+    if input_str.endswith(("/", "\\")):
+        return "directory"
+
+    if "." in path.name:  # Check if there's a file extension
+        return "file"
+
+    return "unknown"
+
+
+
 def create_retrieval_agent(agent_name: str,
                            docs_path: Union[str, List[str]],
                            model_name: str = "gpt-4o",
@@ -195,6 +232,16 @@ def create_retrieval_agent(agent_name: str,
         agent for agent in agent_ids
             if agent.config.get("name") == "default_assistant"
     ][0]
+
+    hub_type = identify_input_type(docs_path)
+
+    knowledge_hub =  KnowledgeHub(
+        name=f"{agent_name} knowledge hub",
+        description= f"Knowledge hub for the {agent_name}",
+        details=docs_path,
+        user_id="guestuser@gmail.com",
+        type=hub_type,
+    )
 
     retriever_config = RetrieverConfig(
         task = "qa",
@@ -231,6 +278,7 @@ def create_retrieval_agent(agent_name: str,
     with Session(dbmanager.engine) as session:
         session.add(retriever_proxy_agent)
         session.add(workflow)
+        session.add(knowledge_hub)
 
         session.commit()
 
