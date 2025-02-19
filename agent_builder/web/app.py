@@ -5,7 +5,7 @@ import queue
 import threading
 
 import httpx
-from agent_builder.routes import wf_router, sk_router, ss_router, md_router, le_router, ag_router
+from agent_builder.routes import wf_router, sk_router, ss_router, md_router, le_router, ag_router, kh_router
 from fastapi import APIRouter
 
 import redis.asyncio as redis_conn
@@ -94,7 +94,12 @@ async def lifespan(app: FastAPI):
     print("***** App stopped *****")
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+        title="Agent of Agents",
+        description="Agent of Agents - Platform to Build Agents",
+        version="0.1.0",
+        swagger_ui_parameters={"defaultModelsExpandDepth": -1},
+        lifespan=lifespan)
 # app = FastAPI(lifespan=run_websocket_server)
 
 
@@ -121,12 +126,12 @@ api = APIRouter(prefix="/api")
 # )
 
 
-routers = [md_router,ag_router,sk_router,ss_router,le_router, wf_router]
+routers = [md_router,ag_router,sk_router,ss_router,le_router, wf_router, kh_router]
 for router in routers:
     api = router(api, dbmanager)
 
 
-@api.post("/sessions/{session_id}/workflow/{workflow_id}/run")
+@api.post("/sessions/{session_id}/workflow/{workflow_id}/run", tags=["Workflow"])
 async def run_session_workflow(message: Message, session_id: int, workflow_id: int):
     """Runs a workflow on provided message"""
     try:
@@ -165,7 +170,7 @@ async def run_session_workflow(message: Message, session_id: int, workflow_id: i
         }
 
 
-@api.get("/version")
+@api.get("/version", tags=["Admin"])
 async def get_version():
     return {
         "status": True,
@@ -175,7 +180,7 @@ async def get_version():
     }
 
 
-@api.post("/create_agent")
+@api.post("/create_agent", tags=["Custom Agents"])
 async def create_retriever_agent(user_input: UserInput):
     """Extracts agent parameters from user input and returns structured JSON response."""
     session_id = user_input.session_id
@@ -240,7 +245,7 @@ async def create_retriever_agent(user_input: UserInput):
 
 
 
-@api.get("/building_blocks")
+@api.get("/building_blocks", tags=["Admin"])
 async def get_building_blocks() -> BuildingBlocks:
 
     skills =  await client.get("http://localhost:8081/api/skills?user_id=guestuser@gmail.com")
@@ -248,9 +253,11 @@ async def get_building_blocks() -> BuildingBlocks:
 
     agents =await client.get("http://localhost:8081/api/agents?user_id=guestuser@gmail.com")
     workflows = await client.get("http://localhost:8081/api/workflows?user_id=guestuser@gmail.com")
+    knowledge_hub = await client.get("http://localhost:8081/api/workflows?user_id=guestuser@gmail.com")
 
     response = BuildingBlocks(skills=skills.json()["data"], models=models.json()["data"],
-                              agents=agents.json()["data"], workflows=workflows.json()["data"])
+                              agents=agents.json()["data"], knowledgehub=knowledge_hub.json()["data"] ,
+                              workflows=workflows.json()["data"])
     return response
 
 

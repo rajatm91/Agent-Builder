@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from openai import OpenAIError
 
 def setup_router(router: APIRouter, dbmanager: DBManager):
-    @router.get("/models")
+    @router.get("/models", tags=["Model"])
     async def list_models(user_id: str):
         """List all models for a user"""
         filters = {"user_id": user_id}
@@ -13,12 +13,12 @@ def setup_router(router: APIRouter, dbmanager: DBManager):
 
     # display models
 
-    @router.post("/models")
+    @router.post("/models", tags=["Model"])
     async def create_model(model: Model):
         """Create a new model"""
         return create_entity(dbmanager,model, Model)
 
-    @router.post("/models/test")
+    @router.post("/models/test", tags=["Model"])
     async def test_model_endpoint(model: Model):
         """Test a model"""
         try:
@@ -34,7 +34,7 @@ def setup_router(router: APIRouter, dbmanager: DBManager):
                 "message": "Error occurred while testing model: " + str(ex_error),
             }
 
-    @router.delete("/models/delete")
+    @router.delete("/models/delete", tags=["Model"])
     async def delete_model(model_id: int, user_id: str):
         """Delete a model"""
         filters = {"id": model_id, "user_id": user_id}

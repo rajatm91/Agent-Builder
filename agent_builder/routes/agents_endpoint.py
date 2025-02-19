@@ -6,18 +6,18 @@ from fastapi import APIRouter
 
 def setup_router(router: APIRouter,dbmanager: DBManager):
 
-    @router.get("/agents")
+    @router.get("/agents", tags=["Agent"])
     async def list_agents(user_id: str):
         """List all agents for a user"""
         filters = {"user_id": user_id}
         return list_entity(dbmanager, Agent, filters=filters)
 
-    @router.post("/agents")
+    @router.post("/agents",tags=["Agent"])
     async def create_agent(agent: Agent):
         """Create a new agent"""
         return create_entity(dbmanager, agent, Agent)
 
-    @router.delete("/agents/delete")
+    @router.delete("/agents/delete",tags=["Agent"])
     async def delete_agent(agent_id: int, user_id: str):
         """Delete an agent"""
         filters = {"id": agent_id, "user_id": user_id}
