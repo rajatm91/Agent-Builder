@@ -20,7 +20,7 @@ from agent_builder.datamodel import (
     Model,
     Skill,
     Workflow,
-    WorkflowAgentLink, )
+    WorkflowAgentLink, KnowledgeHub, )
 
 
 
@@ -237,6 +237,14 @@ def init_db_samples(dbmanager: Any):
         user_id="guestuser@gmail.com",
     )
 
+    knowledge_hub = KnowledgeHub(
+        name="Legal Docs",
+        description= "Knowledge hub for the legal chatbot",
+        details="/Users/rajatmishra/Development/documents/legal_docs/faqs-poc.pdf",
+        user_id="guestuser@gmail.com",
+        type="file",
+    )
+
 
 
     with Session(dbmanager.engine) as session:
@@ -248,6 +256,7 @@ def init_db_samples(dbmanager: Any):
         session.add(default_assistant)
         session.add(generate_image_skill)
         session.add(default_workflow)
+        session.add(knowledge_hub)
 
 
         session.commit()

@@ -1,6 +1,9 @@
 from datetime import datetime
 from enum  import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
+
+from pyarrow import table
+
 from pydantic import BaseModel, field_validator
 from sqlalchemy import ForeignKey, Integer
 from sqlmodel import (
@@ -163,10 +166,6 @@ class RetrieverConfig(SQLModel, table=False):
         return value
 
 
-
-
-
-
 class AgentConfig(SQLModel, table=False):
     name: Optional[str] = None
     human_input_mode: str = "NEVER"
@@ -273,6 +272,34 @@ class Agent(SQLModel, table=True):
             secondaryjoin="Agent.id==AgentLink.agent_id",
         ),
     )
+
+class KnowledgeHubType(str, Enum):
+    website = "website"
+    directory = "directory"
+    file = "file"
+
+
+class KnowledgeHub(SQLModel,table=True):
+    __table_args__ = {"sqlite_autoincrement": True}
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(
+        default_factory=datetime.now,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+    )  # pylint: disable=not-callable
+    updated_at: datetime = Field(
+        default_factory=datetime.now,
+        sa_column=Column(DateTime(timezone=True), onupdate=func.now()),
+    )  # pylint: disable=not-callable
+    user_id: Optional[str] = None
+    type: KnowledgeHubType =  Field(
+        default=KnowledgeHubType.directory,
+        sa_column=Column(SqlEnum(KnowledgeHubType))
+    )
+    name: str
+    description: str
+    details:str
+
+
 
 class WorkFlowType(str, Enum):
     twoagents = "twoagents"

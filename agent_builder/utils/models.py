@@ -1,6 +1,6 @@
 from typing import Literal, Union, List, Optional
 
-from agent_builder.datamodel import Skill, Model, Agent, Workflow
+from agent_builder.datamodel import Skill, Model, Agent, Workflow, KnowledgeHub
 from pydantic import BaseModel
 from pydantic import Field
 import uuid
@@ -24,4 +24,5 @@ class BuildingBlocks(BaseModel):
     skills: Optional[List[Skill]] = Field(default=None)
     models: Optional[List[Model]] = Field(default=None)
     agents: Optional[List[Agent]] = Field(default=None)
+    knowledgehub: Optional[List[KnowledgeHub]] = Field(default=None)
     workflows: Optional[List[Workflow]] = Field(default=None)
