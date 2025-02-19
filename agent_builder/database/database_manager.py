@@ -6,7 +6,7 @@ from loguru import logger
 from sqlalchemy import exc
 from sqlmodel import Session, SQLModel, and_, create_engine, select
 
-from ..datamodel import (
+from agent_builder.datamodel import (
     Agent,
     AgentLink,
     AgentModelLink,

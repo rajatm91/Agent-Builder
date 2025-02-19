@@ -11,7 +11,7 @@ from agent_builder.utils import get_modified_files, extract_successful_code_bloc
 
 import websockets
 from fastapi import WebSocket, WebSocketDisconnect
-from agent_builder.agent_orchestrator import AgentOrchestrator
+from agent_builder.manager.agent_orchestrator import AgentOrchestrator
 from agent_builder.datamodel import Message, Workflow, SocketMessage
 
 
