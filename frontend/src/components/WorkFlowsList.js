@@ -14,7 +14,7 @@ import {
 import AgentChatBox from "./AgentChatBox";
 import { AccountTree, ArrowRightAltRounded,  Close} from "@mui/icons-material";
 
-const WorkFlowsList = ({ workflows, refresh }) => {
+const WorkFlowsList = ({ workflows, isOpen}) => {
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [openChatBox, setOpenChatBox] = useState(false);
 
@@ -22,6 +22,8 @@ const WorkFlowsList = ({ workflows, refresh }) => {
     setSelectedWorkflow(workflow);
     setOpenChatBox(true);
   };
+
+  useEffect(()=>{},[isOpen])
 
   return (
     <Box>

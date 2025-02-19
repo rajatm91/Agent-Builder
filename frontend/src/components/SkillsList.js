@@ -1,22 +1,35 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   List,
   ListItem,
   ListItemText,
-  Typography,  
+  Typography,
   Box,
   ListItemIcon,
-  Divider
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  IconButton
 } from "@mui/material";
-import { AccountTree, Close, Psychology } from "@mui/icons-material";
+import {
+  Check,
+  IntegrationInstructions,
+  Note,
+  Psychology
+} from "@mui/icons-material";
+import Markdown from "react-markdown";
 
 const SkillsList = ({ skills, refresh }) => {
-  const [selectedWorkflow, setSelectedWorkflow] = useState(null);
-  const [openChatBox, setOpenChatBox] = useState(false);
-
-  const handleSkillItem = (workflow) => {
-    setSelectedWorkflow(workflow);
-    setOpenChatBox(true);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedSKill, setSelectedSkill] = useState(null);
+  const handleSkillItem = (item) => {
+    if (item?.content) {
+      setSelectedSkill(item?.content);
+      setOpenModal(true);
+    }
   };
 
   return (
@@ -55,6 +68,17 @@ const SkillsList = ({ skills, refresh }) => {
                   }
                   secondary={skill?.description}
                 />
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSkillItem(skill);
+                    // handleWorkFlowItem(workflow)
+                  }}
+                  color="primary"
+                  sx={{ marginLeft: "8px" }}
+                >
+                  <IntegrationInstructions color="action" />
+                </IconButton>
               </ListItem>
               <Divider />
             </Box>
@@ -69,6 +93,38 @@ const SkillsList = ({ skills, refresh }) => {
         </Typography>
       )}
 
+      <Dialog
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: "bold",
+            backgroundColor: "#f5f5f5",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          Skills
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ padding: "20px" }}>
+            {selectedSKill && <Markdown>{selectedSKill}</Markdown>}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ padding: "16px", backgroundColor: "#f5f5f5" }}>
+          <Button
+            startIcon={<Check />}
+            onClick={() => setOpenModal(false)}
+            color="primary"
+            variant="contained"
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

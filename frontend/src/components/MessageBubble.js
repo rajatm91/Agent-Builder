@@ -1,15 +1,10 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import { formatMessage } from "../utils/userDetails";
 import { Person, SmartToy } from "@mui/icons-material";
-
-const formatBotMessage = (message) => {
-  return message
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\n/g, "<br>"); 
-};
+import Markdown from "react-markdown";
 
 const MessageBubble = ({ message, isUser }) => {
+  const textMessage = message.replace(/\s*TERMINATE$/, "");
   return (
     <Box
       sx={{
@@ -17,7 +12,7 @@ const MessageBubble = ({ message, isUser }) => {
         alignItems: "center",
         justifyContent: isUser ? "flex-end" : "flex-start",
         mb: 2, // Increased margin for better spacing
-        width: "100%",
+        width: "100%"
       }}
     >
       {/* Bot Icon (Left Side) */}
@@ -29,7 +24,7 @@ const MessageBubble = ({ message, isUser }) => {
             fontSize: "28px",
             backgroundColor: "#f0f4f9",
             borderRadius: "50%",
-            padding: "6px",
+            padding: "6px"
           }}
         />
       )}
@@ -46,8 +41,8 @@ const MessageBubble = ({ message, isUser }) => {
           boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
           transition: "transform 0.2s ease-in-out", // Smooth hover effect
           "&:hover": {
-            transform: "scale(1.02)", // Slight zoom on hover
-          },
+            transform: "scale(1.02)" // Slight zoom on hover
+          }
         }}
       >
         <Typography
@@ -55,10 +50,10 @@ const MessageBubble = ({ message, isUser }) => {
           sx={{
             fontSize: "14px",
             lineHeight: "1.5",
-            fontWeight: isUser ? 500 : 400,
+            fontWeight: isUser ? 500 : 400
           }}
         >
-          {formatBotMessage(message)}
+          <Markdown>{textMessage}</Markdown>
         </Typography>
       </Box>
 
@@ -71,7 +66,7 @@ const MessageBubble = ({ message, isUser }) => {
             fontSize: "28px",
             backgroundColor: "#f0f4f9",
             borderRadius: "50%",
-            padding: "6px",
+            padding: "6px"
           }}
         />
       )}

@@ -11,6 +11,7 @@ import {
 import MessageBubble from "./MessageBubble";
 import useWebSocket from "../websocket/useWebSocket";
 import { Send, Person } from "@mui/icons-material";
+import PoweredBy from "./PoweredBy";
 
 // Define a pulsating animation
 const pulsate = keyframes`
@@ -244,6 +245,8 @@ const AgentChatBox = ({ agent }) => {
           </Button>
         </Box>
       </Paper>
+      {/* Powered By Section */}
+      <PoweredBy />
     </Box>
   );
 };

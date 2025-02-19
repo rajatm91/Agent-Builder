@@ -1,3 +1,4 @@
+//
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -149,7 +150,10 @@ const App = () => {
           <StyledButton
             selected={selectedTab === "Build"}
             startIcon={<BuildIcon />}
-            onClick={() => setSelectedTab("Build")}
+            onClick={() => {
+              setSelectedTab("Build")
+              setExpanded(false);
+            }}
             sx={{ mx: 1 }}
           >
             Build
@@ -157,7 +161,10 @@ const App = () => {
           <StyledButton
             selected={selectedTab === "Playground"}
             startIcon={<PlaygroundIcon />}
-            onClick={() => setSelectedTab("Playground")}
+            onClick={() => {
+              setSelectedTab("Playground");
+              setExpanded("workflows");
+            }}
             sx={{ mx: 1 }}
           >
             Playground
