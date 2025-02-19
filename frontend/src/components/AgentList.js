@@ -26,7 +26,10 @@ import {
   ExpandMore,
   Cancel,
   Save,
-  Group
+  Group,
+  Lightbulb,
+  Person,
+  BusinessCenter
 } from "@mui/icons-material";
 
 const AgentList = ({ agents, onRefresh }) => {
@@ -36,7 +39,7 @@ const AgentList = ({ agents, onRefresh }) => {
   const [openAdvanced, setOpenAdvanced] = useState(false);
 
   useEffect(() => {
-    console.log("Refreshing Agent list because refresh changed.");
+    // console.log("Refreshing Agent list because refresh changed.");
   }, [onRefresh]);
 
   const handleAgentClick = (agent) => {
@@ -90,25 +93,40 @@ const AgentList = ({ agents, onRefresh }) => {
 
   return (
     <Box>
-  
       {agents?.length > 0 && (
         <List>
           {agents?.map((agent) => (
             <Box key={agent.id}>
               {/* Agent List Item */}
               <ListItem
-                button
-                onClick={() => handleAgentClick(agent)}
                 sx={{
-                  "&:hover": { backgroundColor: "#f0f0f0" }
+                  position: "relative",
+                  backgroundColor: "#F7F9FCFF",
+                  padding: 2
                 }}
               >
-                {/* Icon */}
+                {agent.classification === "advance" && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 4,
+                      left: -20,
+                      backgroundColor: "#1976d2",
+                      color: "white",
+                      padding: "2px 8px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      borderRadius: "4px",
+                      transform: "rotate(320deg)"
+                    }}
+                  >
+                    Advance
+                  </Box>
+                )}
+
                 <ListItemIcon sx={{ minWidth: 40 }}>
                   <Group color="action" />
                 </ListItemIcon>
-
-                {/* Text Content */}
                 <ListItemText
                   primary={
                     <Typography
@@ -125,26 +143,16 @@ const AgentList = ({ agents, onRefresh }) => {
                   }
                   secondary={agent.user_id}
                 />
-
-                {/* Edit Button */}
-                <Box
-                  sx={{
-                    minWidth: 50,
-                    display: "flex",
-                    justifyContent: "flex-end"
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditClick(agent);
                   }}
+                  color="primary"
+                  sx={{ marginLeft: "8px" }}
                 >
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditClick(agent);
-                    }}
-                    color="primary"
-                    sx={{ marginLeft: "8px" }}
-                  >
-                    <Edit />
-                  </IconButton>
-                </Box>
+                  <Edit />
+                </IconButton>
               </ListItem>
 
               {/* Divider */}
@@ -154,9 +162,7 @@ const AgentList = ({ agents, onRefresh }) => {
         </List>
       )}
 
-      {agents?.length === 0 && (
-        <Typography>No Agents available</Typography>
-      )}
+      {agents?.length === 0 && <Typography>No Agents available</Typography>}
 
       {/* Edit Agent Modal */}
       <Dialog
@@ -169,42 +175,70 @@ const AgentList = ({ agents, onRefresh }) => {
           sx={{
             fontWeight: "bold",
             backgroundColor: "#f5f5f5",
-            alignItems:'center',            
-            justifyContent:'center',
+            alignItems: "center",
+            justifyContent: "center"
           }}
         >
           Edit Agent
         </DialogTitle>
         <DialogContent>
           <Box sx={{ padding: "20px" }}>
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: "bold", marginBottom: "10px" }}
-            >
-              Agent Name:{" "}
-              <span style={{ fontWeight: "normal" }}>
-                {editedAgent?.config?.name || "N/A"}
-              </span>
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: "bold", marginBottom: "10px" }}
-            >
-              Agent Type:{" "}
-              <span style={{ fontWeight: "normal" }}>
-                {getDialogTitle(editedAgent?.type)}
-              </span>
-            </Typography>
+            <TextField
+              label="Customize Agent Name"
+              name="name"
+              value={editedAgent?.config?.name || ""}
+              onChange={(e) => {
+                const { name, value } = e.target;
+                setEditedAgent((prevState) => ({
+                  ...prevState,
+                  config: {
+                    ...prevState.config,
+                    [name]: value
+                  }
+                }));
+              }}
+              fullWidth
+              margin="normal"
+              InputProps={{
+                startAdornment: (
+                  <Person sx={{ color: "gray", marginRight: 1 }} />
+                )
+              }}
+            />
 
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: "bold", marginBottom: "20px" }}
-            >
-              Knowledge Hub:{" "}
-              <span style={{ fontWeight: "normal" }}>
-                {editedAgent?.config?.retrieve_config?.docs_path || "N/A"}
-              </span>
-            </Typography>
+            <TextField
+              label="Customize Agent Type"
+              name="type"
+              value={editedAgent?.type || ""}
+              onChange={(e) => {
+                const { name, value } = e.target;
+                setEditedAgent((prevState) => ({
+                  ...prevState,
+                  [name]: value
+                }));
+              }}
+              fullWidth
+              margin="normal"
+              InputProps={{
+                startAdornment: (
+                  <BusinessCenter sx={{ color: "gray", marginRight: 1 }} />
+                )
+              }}
+            />         
+
+            <TextField
+              label="Customize Agent Knowledge hub"
+              name="docs_path"
+              value={editedAgent?.config?.retrieve_config?.docs_path || ""}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              InputProps={{
+                startAdornment: (
+                  <Lightbulb sx={{ color: "gray", marginRight: 1 }} />
+                )
+              }}
+            />
 
             <TextField
               label="Customize Roles and Responsibility"
@@ -254,7 +288,16 @@ const AgentList = ({ agents, onRefresh }) => {
                   label="Roles and Responsibility"
                   name="system_message"
                   value={editedAgent?.config?.system_message || ""}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const { name, value } = e.target;
+                    setEditedAgent((prevState) => ({
+                      ...prevState,
+                      config: {
+                        ...prevState.config,
+                        [name]: value
+                      }
+                    }));
+                  }}
                   fullWidth
                   margin="normal"
                   multiline

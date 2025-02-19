@@ -7,14 +7,14 @@ import {
   Button,
   Paper,
   Box,
-  ListItemIcon
+  ListItemIcon,
+  Divider,
+  IconButton
 } from "@mui/material";
 import AgentChatBox from "./AgentChatBox";
-import { AccountTree, Close } from "@mui/icons-material";
-import ImageDisplay from "./ImageDisplay";
-import VerticalFlow from "../assets/images/VerticalFlow.png";
+import { AccountTree, ArrowRightAltRounded,  Close} from "@mui/icons-material";
 
-const WorkFlowsList = ({ workflows, refresh }) => {
+const WorkFlowsList = ({ workflows, isOpen}) => {
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [openChatBox, setOpenChatBox] = useState(false);
 
@@ -22,6 +22,8 @@ const WorkFlowsList = ({ workflows, refresh }) => {
     setSelectedWorkflow(workflow);
     setOpenChatBox(true);
   };
+
+  useEffect(()=>{},[isOpen])
 
   return (
     <Box>
@@ -37,23 +39,41 @@ const WorkFlowsList = ({ workflows, refresh }) => {
           }}
         >
           {workflows?.map((workflow) => (
-            <ListItem
-              key={workflow?.id}
-              button
-              onClick={() => handleWorkFlowItem(workflow)}
-            >
-              <ListItemIcon sx={{ minWidth: 40 }}>
-                <AccountTree color="action" />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography sx={{ fontWeight: "bold" }}>
-                    {workflow?.name}
-                  </Typography>
-                }
-                secondary={workflow?.user_id}
-              />
-            </ListItem>
+            <Box>
+              <ListItem
+                key={workflow?.id}
+                button
+                onClick={() => handleWorkFlowItem(workflow)}
+                sx={{
+                  transition: "0.3s",
+                  backgroundColor: "#F7F9FCFF",
+                  "&:hover": { backgroundColor: "#f5f5f5" }
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  <AccountTree color="action" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography sx={{ fontWeight: "bold" }}>
+                      {workflow?.name}
+                    </Typography>
+                  }
+                  secondary={workflow?.user_id}
+                />
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleWorkFlowItem(workflow)
+                  }}
+                  color="primary"
+                  sx={{ marginLeft: "8px" }}
+                >                  
+                  <ArrowRightAltRounded color="action" />
+                </IconButton>
+              </ListItem>
+              <Divider />
+            </Box>
           ))}
         </List>
       )}
@@ -122,12 +142,12 @@ const WorkFlowsList = ({ workflows, refresh }) => {
           {/* Chat Box */}
           <Box display={"flex"} flexDirection={"row"}>
             <AgentChatBox agent={selectedWorkflow} />
-            <ImageDisplay
+            {/* <ImageDisplay
               src={VerticalFlow}
               alt="Local Image"
               width="300px"
               height="300px"
-            />
+            /> */}
           </Box>
         </Paper>
       )}
