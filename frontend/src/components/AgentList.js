@@ -94,7 +94,12 @@ const AgentList = ({ agents, onRefresh }) => {
   return (
     <Box>
       {agents?.length > 0 && (
-        <List>
+        <List
+          sx={{
+            maxHeight: agents.length > 3 ? "40vh" : "auto",
+            overflowY: agents.length > 3 ? "auto" : "visible"
+          }}
+        >
           {agents?.map((agent) => (
             <Box key={agent.id}>
               {/* Agent List Item */}
@@ -110,14 +115,14 @@ const AgentList = ({ agents, onRefresh }) => {
                     sx={{
                       position: "absolute",
                       top: 4,
-                      left: -20,
+                      left: 0,
                       backgroundColor: "#1976d2",
                       color: "white",
                       padding: "2px 8px",
                       fontSize: "12px",
                       fontWeight: "bold",
                       borderRadius: "4px",
-                      transform: "rotate(320deg)"
+                      transform: "rotate(340deg)"
                     }}
                   >
                     Advance
@@ -224,7 +229,7 @@ const AgentList = ({ agents, onRefresh }) => {
                   <BusinessCenter sx={{ color: "gray", marginRight: 1 }} />
                 )
               }}
-            />         
+            />
 
             <TextField
               label="Customize Agent Knowledge hub"

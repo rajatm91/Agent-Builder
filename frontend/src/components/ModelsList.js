@@ -4,15 +4,15 @@ import {
   ListItem,
   ListItemText,
   Icon,
-  Typography,  
+  Typography,
   Collapse,
-  Divider,  
+  Divider,
   Box,
   ListItemIcon
 } from "@mui/material";
 import { ExpandMore, ExpandLess, Memory } from "@mui/icons-material"; // Import the icons
 
-const ModelsList = ({models}) => {
+const ModelsList = ({ models }) => {
   const [selectedModel, setSelectedModel] = useState(null);
 
   const handleModelClick = (model) => {
@@ -23,16 +23,21 @@ const ModelsList = ({models}) => {
     <Box>
       {/* Models List */}
       {models?.length > 0 && (
-        <List>
+        <List
+          sx={{
+            maxHeight: models.length > 3 ? "40vh" : "auto",
+            overflowY: models.length > 3 ? "auto" : "visible"
+          }}
+        >
           {models.map((model) => (
             <Box key={model.id}>
               {/* Model List Item */}
               <ListItem
                 button
                 onClick={() => handleModelClick(model)}
-                sx={{    
+                sx={{
                   transition: "0.3s",
-                  backgroundColor:'#F7F9FCFF',
+                  backgroundColor: "#F7F9FCFF",
                   "&:hover": { backgroundColor: "#f5f5f5" }
                 }}
               >

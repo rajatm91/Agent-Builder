@@ -11,6 +11,7 @@ import {
 import MessageBubble from "./MessageBubble";
 import PoweredBy from "./PoweredBy";
 import { Send } from "@mui/icons-material";
+import VoiceToText from "./VoiceToText";
 
 // Define a pulsating animation
 const pulsate = keyframes`
@@ -57,7 +58,7 @@ const ChatBox = ({ onCreateAgent, uuid }) => {
       });
 
       const data = await response.json();
-      
+
       if (data?.status === "further_question") {
         setMessages((prev) => [
           ...prev,
@@ -77,8 +78,8 @@ const ChatBox = ({ onCreateAgent, uuid }) => {
           model: data?.content?.model,
           embedding_model: data?.content?.embedding_model,
           reason: "Agent successfully created"
-        };        
-        
+        };
+
         setMessages((prev) => [
           ...prev,
           {
@@ -213,6 +214,7 @@ const ChatBox = ({ onCreateAgent, uuid }) => {
             borderRadius: 0
           }}
         >
+          <VoiceToText onInputChange = {(text)=>setMessage(text)}/>
           <TextField
             fullWidth
             variant="outlined"
@@ -232,6 +234,7 @@ const ChatBox = ({ onCreateAgent, uuid }) => {
               }
             }}
           />
+          
           <Button
             variant="contained"
             color="primary"

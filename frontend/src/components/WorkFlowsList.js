@@ -12,9 +12,9 @@ import {
   IconButton
 } from "@mui/material";
 import AgentChatBox from "./AgentChatBox";
-import { AccountTree, ArrowRightAltRounded,  Close} from "@mui/icons-material";
+import { AccountTree, ArrowRightAltRounded, Close } from "@mui/icons-material";
 
-const WorkFlowsList = ({ workflows, isOpen}) => {
+const WorkFlowsList = ({ workflows }) => {
   const [selectedWorkflow, setSelectedWorkflow] = useState(null);
   const [openChatBox, setOpenChatBox] = useState(false);
 
@@ -23,10 +23,22 @@ const WorkFlowsList = ({ workflows, isOpen}) => {
     setOpenChatBox(true);
   };
 
-  useEffect(()=>{},[isOpen])
-
   return (
     <Box>
+      {openChatBox && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: 999,
+            pointerEvents: "auto"
+          }}
+        />
+      )}
       {/* Workflows List */}
       {workflows?.length > 0 && (
         <List
@@ -34,8 +46,8 @@ const WorkFlowsList = ({ workflows, isOpen}) => {
             width: "100%",
             maxWidth: 400,
             mx: "auto",
-            maxHeight: "80vh",
-            overflowY: "auto"
+            maxHeight: workflows.length > 3 ? "40vh" : "auto",
+            overflowY: workflows.length > 3 ? "auto" : "visible"
           }}
         >
           {workflows?.map((workflow) => (
@@ -64,11 +76,11 @@ const WorkFlowsList = ({ workflows, isOpen}) => {
                 <IconButton
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleWorkFlowItem(workflow)
+                    handleWorkFlowItem(workflow);
                   }}
                   color="primary"
                   sx={{ marginLeft: "8px" }}
-                >                  
+                >
                   <ArrowRightAltRounded color="action" />
                 </IconButton>
               </ListItem>
@@ -142,12 +154,6 @@ const WorkFlowsList = ({ workflows, isOpen}) => {
           {/* Chat Box */}
           <Box display={"flex"} flexDirection={"row"}>
             <AgentChatBox agent={selectedWorkflow} />
-            {/* <ImageDisplay
-              src={VerticalFlow}
-              alt="Local Image"
-              width="300px"
-              height="300px"
-            /> */}
           </Box>
         </Paper>
       )}

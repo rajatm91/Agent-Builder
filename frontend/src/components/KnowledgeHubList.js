@@ -24,8 +24,8 @@ const KnowledgeHubList = ({ knowledgeHub, refresh }) => {
             width: "100%",
             maxWidth: 400,
             mx: "auto",
-            maxHeight: "80vh",
-            overflowY: "auto"
+            maxHeight: knowledgeHub.length > 3 ? "40vh" : "auto",
+            overflowY: knowledgeHub.length > 3 ? "auto" : "visible"
           }}
         >
           {knowledgeHub?.map((knowledge) => (

@@ -41,8 +41,8 @@ const SkillsList = ({ skills, refresh }) => {
             width: "100%",
             maxWidth: 400,
             mx: "auto",
-            maxHeight: "80vh",
-            overflowY: "auto"
+            maxHeight: skills.length > 3 ? "40vh" : "auto",
+            overflowY: skills.length > 3 ? "auto" : "visible"
           }}
         >
           {skills?.map((skill) => (
