@@ -36,7 +36,7 @@ const AgentList = ({ agents, onRefresh }) => {
   const [openAdvanced, setOpenAdvanced] = useState(false);
 
   useEffect(() => {
-    console.log("Refreshing Agent list because refresh changed.");
+    // console.log("Refreshing Agent list because refresh changed.");
   }, [onRefresh]);
 
   const handleAgentClick = (agent) => {
@@ -90,25 +90,40 @@ const AgentList = ({ agents, onRefresh }) => {
 
   return (
     <Box>
-  
       {agents?.length > 0 && (
         <List>
           {agents?.map((agent) => (
             <Box key={agent.id}>
               {/* Agent List Item */}
               <ListItem
-                button
-                onClick={() => handleAgentClick(agent)}
                 sx={{
-                  "&:hover": { backgroundColor: "#f0f0f0" }
+                  position: "relative",
+                  backgroundColor:'#F7F9FCFF',
+                  padding: 2
                 }}
-              >
-                {/* Icon */}
-                <ListItemIcon sx={{ minWidth: 40 }}>
+              >                
+                {agent.classification === "advance" && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 4, 
+                      left:-20,                     
+                      backgroundColor: "#1976d2",
+                      color: "white",
+                      padding: "2px 8px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      borderRadius: "4px",
+                      transform: "rotate(320deg)"
+                    }}
+                  >
+                    Advance
+                  </Box>
+                )}
+
+<ListItemIcon sx={{ minWidth: 40 }}>
                   <Group color="action" />
                 </ListItemIcon>
-
-                {/* Text Content */}
                 <ListItemText
                   primary={
                     <Typography
@@ -125,15 +140,6 @@ const AgentList = ({ agents, onRefresh }) => {
                   }
                   secondary={agent.user_id}
                 />
-
-                {/* Edit Button */}
-                <Box
-                  sx={{
-                    minWidth: 50,
-                    display: "flex",
-                    justifyContent: "flex-end"
-                  }}
-                >
                   <IconButton
                     onClick={(e) => {
                       e.stopPropagation();
@@ -144,7 +150,6 @@ const AgentList = ({ agents, onRefresh }) => {
                   >
                     <Edit />
                   </IconButton>
-                </Box>
               </ListItem>
 
               {/* Divider */}
@@ -154,9 +159,7 @@ const AgentList = ({ agents, onRefresh }) => {
         </List>
       )}
 
-      {agents?.length === 0 && (
-        <Typography>No Agents available</Typography>
-      )}
+      {agents?.length === 0 && <Typography>No Agents available</Typography>}
 
       {/* Edit Agent Modal */}
       <Dialog
@@ -169,8 +172,8 @@ const AgentList = ({ agents, onRefresh }) => {
           sx={{
             fontWeight: "bold",
             backgroundColor: "#f5f5f5",
-            alignItems:'center',            
-            justifyContent:'center',
+            alignItems: "center",
+            justifyContent: "center"
           }}
         >
           Edit Agent

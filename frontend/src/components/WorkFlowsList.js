@@ -7,7 +7,8 @@ import {
   Button,
   Paper,
   Box,
-  ListItemIcon
+  ListItemIcon,
+  Divider
 } from "@mui/material";
 import AgentChatBox from "./AgentChatBox";
 import { AccountTree, Close } from "@mui/icons-material";
@@ -37,23 +38,31 @@ const WorkFlowsList = ({ workflows, refresh }) => {
           }}
         >
           {workflows?.map((workflow) => (
-            <ListItem
-              key={workflow?.id}
-              button
-              onClick={() => handleWorkFlowItem(workflow)}
-            >
-              <ListItemIcon sx={{ minWidth: 40 }}>
-                <AccountTree color="action" />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography sx={{ fontWeight: "bold" }}>
-                    {workflow?.name}
-                  </Typography>
-                }
-                secondary={workflow?.user_id}
-              />
-            </ListItem>
+            <Box>
+              <ListItem
+                key={workflow?.id}
+                button
+                onClick={() => handleWorkFlowItem(workflow)}
+                sx={{
+                  transition: "0.3s",
+                  backgroundColor: "#F7F9FCFF",
+                  "&:hover": { backgroundColor: "#f5f5f5" }
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 40 }}>
+                  <AccountTree color="action" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography sx={{ fontWeight: "bold" }}>
+                      {workflow?.name}
+                    </Typography>
+                  }
+                  secondary={workflow?.user_id}
+                />
+              </ListItem>
+              <Divider />
+            </Box>
           ))}
         </List>
       )}
@@ -122,12 +131,12 @@ const WorkFlowsList = ({ workflows, refresh }) => {
           {/* Chat Box */}
           <Box display={"flex"} flexDirection={"row"}>
             <AgentChatBox agent={selectedWorkflow} />
-            <ImageDisplay
+            {/* <ImageDisplay
               src={VerticalFlow}
               alt="Local Image"
               width="300px"
               height="300px"
-            />
+            /> */}
           </Box>
         </Paper>
       )}

@@ -166,8 +166,8 @@ const AgentChatBox = ({ agent }) => {
                   animation: `${pulsate} 1.5s infinite`,
                   fontWeight: 500,
                 }}
-              >
-                Start chatting with {agent?.name}...
+              >                
+                Start a discussion with {agent?.name} now...
               </Typography>
             </Box>
           ) : (

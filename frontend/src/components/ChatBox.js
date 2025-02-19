@@ -6,7 +6,7 @@ import {
   Typography,
   CircularProgress,
   Paper,
-  keyframes,
+  keyframes
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import PoweredBy from "./PoweredBy";
@@ -19,7 +19,7 @@ const pulsate = keyframes`
   100% { opacity: 1; }
 `;
 
-const ChatBox = ({ onCreateAgent }) => {
+const ChatBox = ({ onCreateAgent, uuid }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false); // Track bot response status
@@ -48,42 +48,56 @@ const ChatBox = ({ onCreateAgent }) => {
       const response = await fetch("http://localhost:8081/api/create_agent", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          content: message,
-        }),
+          session_id: uuid,
+          user_input: message
+        })
       });
 
       const data = await response.json();
-      if (data?.availability === "Available") {
-        const agentDetails = {
-          name: data?.name,
-          documentPath: data?.documentPath,
-          collection_name: data?.collection_name,
-          model: data?.model,
-          embedding_model: data?.embedding_model,
-          reason: "Agent successfully created",
-        };
-        onCreateAgent(agentDetails);
+      
+      if (data?.status === "further_question") {
         setMessages((prev) => [
           ...prev,
           {
-            text: `Agent creation Successfully with name ${data?.name}.`,
-            isUser: false,
-          },
+            text: data?.content,
+            isUser: false
+          }
         ]);
+      } else if (
+        data?.status === "complete" &&
+        data?.content?.availability === "Available"
+      ) {
+        const agentDetails = {
+          name: data?.content?.name,
+          documentPath: data?.content?.documentPath,
+          collection_name: data?.content?.collection_name,
+          model: data?.content?.model,
+          embedding_model: data?.content?.embedding_model,
+          reason: "Agent successfully created"
+        };        
+        
+        setMessages((prev) => [
+          ...prev,
+          {
+            text: `Agent creation Successfully with name ${data?.content?.name}.`,
+            isUser: false
+          }
+        ]);
+        onCreateAgent(agentDetails);
       } else {
         setMessages((prev) => [
           ...prev,
-          { text: "Agent creation failed. Please try again.", isUser: false },
+          { text: "Agent creation failed. Please try again.", isUser: false }
         ]);
       }
     } catch (error) {
       console.error("Error creating agent:", error);
       setMessages((prev) => [
         ...prev,
-        { text: "Error occurred while creating agent.", isUser: false },
+        { text: "Error occurred while creating agent.", isUser: false }
       ]);
     } finally {
       setLoading(false);
@@ -107,7 +121,7 @@ const ChatBox = ({ onCreateAgent }) => {
         height: "100%",
         backgroundColor: "#f9fafb",
         borderRadius: 2,
-        overflow: "hidden",
+        overflow: "hidden"
       }}
     >
       {/* Chat Container */}
@@ -116,7 +130,7 @@ const ChatBox = ({ onCreateAgent }) => {
           display: "flex",
           flexDirection: "column",
           flexGrow: 1,
-          overflow: "hidden",
+          overflow: "hidden"
         }}
       >
         {/* Messages Scrollable Area */}
@@ -129,7 +143,7 @@ const ChatBox = ({ onCreateAgent }) => {
             borderRadius: 2,
             margin: 1,
             boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-            maxHeight: "calc(100vh - 320px)",
+            maxHeight: "calc(100vh - 220px)"
           }}
         >
           {messages.length === 0 ? (
@@ -138,7 +152,7 @@ const ChatBox = ({ onCreateAgent }) => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                height: "100%",
+                height: "100%"
               }}
             >
               {/* Pulsating Text Animation */}
@@ -147,10 +161,10 @@ const ChatBox = ({ onCreateAgent }) => {
                 color="textSecondary"
                 sx={{
                   animation: `${pulsate} 1.5s infinite`,
-                  fontWeight: 500,
+                  fontWeight: 500
                 }}
               >
-                Start chatting...
+                Type below to start the conversation...
               </Typography>
             </Box>
           ) : (
@@ -173,7 +187,7 @@ const ChatBox = ({ onCreateAgent }) => {
               display: "flex",
               alignItems: "center",
               marginTop: 1,
-              paddingLeft: 2,
+              paddingLeft: 2
             }}
           >
             <CircularProgress size={16} sx={{ marginRight: 1 }} />
@@ -196,7 +210,7 @@ const ChatBox = ({ onCreateAgent }) => {
             borderTop: "1px solid #ddd",
             backgroundColor: "#ffffff",
             boxShadow: "0px -2px 4px rgba(0, 0, 0, 0.1)",
-            borderRadius: 0,
+            borderRadius: 0
           }}
         >
           <TextField
@@ -210,12 +224,12 @@ const ChatBox = ({ onCreateAgent }) => {
               borderRadius: 2,
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
-                  borderColor: "#ddd",
+                  borderColor: "#ddd"
                 },
                 "&:hover fieldset": {
-                  borderColor: "#1976d2",
-                },
-              },
+                  borderColor: "#1976d2"
+                }
+              }
             }}
           />
           <Button
@@ -230,8 +244,8 @@ const ChatBox = ({ onCreateAgent }) => {
               borderRadius: 2,
               boxShadow: "none",
               "&:hover": {
-                backgroundColor: "#1565c0",
-              },
+                backgroundColor: "#1565c0"
+              }
             }}
           >
             Send

@@ -30,9 +30,9 @@ const ModelsList = ({models}) => {
               <ListItem
                 button
                 onClick={() => handleModelClick(model)}
-                sx={{
-                  borderRadius: 1,
+                sx={{    
                   transition: "0.3s",
+                  backgroundColor:'#F7F9FCFF',
                   "&:hover": { backgroundColor: "#f5f5f5" }
                 }}
               >
