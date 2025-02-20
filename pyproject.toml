@@ -8,7 +8,7 @@ authors = ["Rajat Mishra <mishra.rajat91@gmail.com>"]
 [tool.poetry.dependencies]
 python = ">3.10,<3.13"
 alembic = "^1.14.1"
-ag2 = {extras = ["retrievechat"], version = "^0.7.3"}
+ag2 = {extras = ["retrievechat-qdrant"], version = "^0.7.3"}
 sqlmodel = "^0.0.22"
 fastapi = "^0.115.8"
 python-dotenv = "^1.0.1"
@@ -19,6 +19,7 @@ typer = "^0.15.1"
 psycopg-binary = "^3.2.4"
 psycopg2-binary = "^2.9.10"
 redis = "^5.2.1"
+qdrant-client = "^1.13.2"
 
 
 [tool.poetry.group.dev.dependencies]

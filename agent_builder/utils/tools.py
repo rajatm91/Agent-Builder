@@ -219,6 +219,7 @@ def create_retrieval_agent(agent_name: str,
                            ) -> dict:
     dbmanager = DBManager(engine_uri=os.environ["AGENT_BUILDER_DB_URI"])
     embedding_model = "BAAI/bge-large-en-v1.5"
+   # client = QdrantClient(url=os.environ["AGENT_BUILDER_QDRANT_URI"])
 
     with Session(dbmanager.engine) as session:
         model = dbmanager.get_items(
@@ -248,7 +249,7 @@ def create_retrieval_agent(agent_name: str,
         docs_path = docs_path,
         collection_name = f"{agent_name}_collection",
         db_config = {
-            "connection_string": os.environ["AGENT_BUILDER_DB_URI"]
+            "client": os.environ["AGENT_BUILDER_QDRANT_URI"]
         },
         model = "gpt-4o",
         get_or_create=True,

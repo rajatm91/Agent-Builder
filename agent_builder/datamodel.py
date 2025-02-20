@@ -138,13 +138,12 @@ class RetrieverConfig(SQLModel, table=False):
     task: str = "qa"
     docs_path: Union[List[str], str]
     vector_db: VectorDBType = Field(
-        default=VectorDBType.pgvector,
+        default=VectorDBType.qdrant,
         sa_column=Column(SqlEnum(VectorDBType))
     )
     collection_name: str
     db_config: dict = Field(default_factory={}, sa_column=Column(JSON))
     embedding_model: str = "BAAI/bge-large-en-v1.5"
-    chunk_token_size: int = 512
     model: Optional[str] = Field(default="gpt-4o")
     get_or_create: bool
     customized_prompt: Optional[str] = None
