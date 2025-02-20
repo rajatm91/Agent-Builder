@@ -6,12 +6,13 @@ import {
   Typography,
   CircularProgress,
   Paper,
-  keyframes,
+  keyframes
 } from "@mui/material";
 import MessageBubble from "./MessageBubble";
 import useWebSocket from "../websocket/useWebSocket";
 import { Send, Person } from "@mui/icons-material";
 import PoweredBy from "./PoweredBy";
+import VoiceToText from "./VoiceToText";
 
 // Define a pulsating animation
 const pulsate = keyframes`
@@ -39,7 +40,7 @@ const AgentChatBox = ({ agent }) => {
         if (messageContent) {
           setMessages((prev) => [
             ...prev,
-            { text: messageContent, isUser: false },
+            { text: messageContent, isUser: false }
           ]);
 
           if (messageContent.includes("TERMINATE")) {
@@ -78,9 +79,9 @@ const AgentChatBox = ({ agent }) => {
           user_id: agent.user_id,
           session_id: 2,
           workflow_id: agent?.id,
-          message_type: "user_message",
+          message_type: "user_message"
         },
-        type: "user_message",
+        type: "user_message"
       };
 
       sendSocketMessage(messageObject);
@@ -97,7 +98,7 @@ const AgentChatBox = ({ agent }) => {
         justifyContent: "flex-end",
         width: "100%",
         maxWidth: "100vw",
-        borderRadius: 4,
+        borderRadius: 4
       }}
     >
       {/* Chat Container */}
@@ -111,7 +112,7 @@ const AgentChatBox = ({ agent }) => {
           p: 3,
           height: "78vh",
           maxHeight: "80vh",
-          overflow: "hidden",
+          overflow: "hidden"
         }}
       >
         {/* Header */}
@@ -122,7 +123,7 @@ const AgentChatBox = ({ agent }) => {
             alignItems: "center",
             borderBottom: "1px solid #ddd",
             paddingBottom: 1,
-            marginBottom: 2,
+            marginBottom: 2
           }}
         >
           <Person color="primary" sx={{ marginRight: 1 }} /> {/* Agent Icon */}
@@ -133,7 +134,7 @@ const AgentChatBox = ({ agent }) => {
               fontWeight: 600,
               fontFamily: "Roboto, sans-serif",
               fontSize: "1.25rem",
-              letterSpacing: 0.5,
+              letterSpacing: 0.5
             }}
           >
             Chat with {agent?.name}
@@ -147,7 +148,7 @@ const AgentChatBox = ({ agent }) => {
             overflowY: "auto",
             paddingRight: 1,
             paddingBottom: 2,
-            maxHeight: "calc(100% - 100px)",
+            maxHeight: "calc(100% - 100px)"
           }}
         >
           {messages.length === 0 ? (
@@ -156,7 +157,7 @@ const AgentChatBox = ({ agent }) => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                height: "100%",
+                height: "100%"
               }}
             >
               {/* Pulsating Text Animation */}
@@ -165,9 +166,9 @@ const AgentChatBox = ({ agent }) => {
                 color="textSecondary"
                 sx={{
                   animation: `${pulsate} 1.5s infinite`,
-                  fontWeight: 500,
+                  fontWeight: 500
                 }}
-              >                
+              >
                 Start a discussion with {agent?.name} now...
               </Typography>
             </Box>
@@ -202,9 +203,10 @@ const AgentChatBox = ({ agent }) => {
             padding: "10px 20px",
             borderTop: "1px solid #ddd",
             backgroundColor: "#f9fafb",
-            borderRadius: 2,
+            borderRadius: 2
           }}
         >
+          <VoiceToText onInputChange={(text) => setMessage(text)} />
           <TextField
             fullWidth
             variant="outlined"
@@ -217,11 +219,11 @@ const AgentChatBox = ({ agent }) => {
               "& .MuiOutlinedInput-root": {
                 borderRadius: 20,
                 backgroundColor: "#ffffff",
-                paddingRight: "8px",
+                paddingRight: "8px"
               },
               "& .MuiInputBase-input": {
-                padding: "10px",
-              },
+                padding: "10px"
+              }
             }}
           />
           <Button
@@ -236,8 +238,8 @@ const AgentChatBox = ({ agent }) => {
               fontWeight: 600,
               boxShadow: "none",
               "&:hover": {
-                backgroundColor: "#3d8bfd",
-              },
+                backgroundColor: "#3d8bfd"
+              }
             }}
           >
             <Send sx={{ marginRight: 1 }} /> {/* Send Icon */}

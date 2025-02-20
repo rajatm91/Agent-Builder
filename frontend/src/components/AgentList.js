@@ -29,15 +29,22 @@ import {
   Group,
   Lightbulb,
   Person,
-  BusinessCenter
+  BusinessCenter,
+  InputSharp,
+  Memory,
+  ViewInAr,
+  Task
 } from "@mui/icons-material";
+import ModelDropdown from "./ModelDropDown";
 
-const AgentList = ({ agents, onRefresh }) => {
+const AgentList = ({ agents, onRefresh, models }) => {
+  console.log("AGENTS", agents);
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [editedAgent, setEditedAgent] = useState(null);
   const [openAdvanced, setOpenAdvanced] = useState(false);
 
+  console.log("models---->", JSON.stringify(models));
   useEffect(() => {
     // console.log("Refreshing Agent list because refresh changed.");
   }, [onRefresh]);
@@ -94,7 +101,12 @@ const AgentList = ({ agents, onRefresh }) => {
   return (
     <Box>
       {agents?.length > 0 && (
-        <List>
+        <List
+          sx={{
+            maxHeight: agents.length > 3 ? "40vh" : "auto",
+            overflowY: agents.length > 3 ? "auto" : "visible"
+          }}
+        >
           {agents?.map((agent) => (
             <Box key={agent.id}>
               {/* Agent List Item */}
@@ -110,14 +122,14 @@ const AgentList = ({ agents, onRefresh }) => {
                     sx={{
                       position: "absolute",
                       top: 4,
-                      left: -20,
+                      left: 0,
                       backgroundColor: "#1976d2",
                       color: "white",
                       padding: "2px 8px",
                       fontSize: "12px",
                       fontWeight: "bold",
                       borderRadius: "4px",
-                      transform: "rotate(320deg)"
+                      transform: "rotate(340deg)"
                     }}
                   >
                     Advance
@@ -224,7 +236,7 @@ const AgentList = ({ agents, onRefresh }) => {
                   <BusinessCenter sx={{ color: "gray", marginRight: 1 }} />
                 )
               }}
-            />         
+            />
 
             <TextField
               label="Customize Agent Knowledge hub"
@@ -242,12 +254,14 @@ const AgentList = ({ agents, onRefresh }) => {
 
             <TextField
               label="Customize Roles and Responsibility"
-              name="customize_prompt"
+              name="customized_prompt"
               value={
-                editedAgent?.config?.retrieve_config?.customize_prompt || ""
+                editedAgent?.config?.retrieve_config?.customized_prompt || ""
               }
               onChange={handleChange}
               fullWidth
+              multiline
+              minRows={3}
               margin="normal"
               InputProps={{
                 startAdornment: (
@@ -284,10 +298,30 @@ const AgentList = ({ agents, onRefresh }) => {
                 {openAdvanced ? "Hide Advanced Topics" : "Show Advanced Topics"}
               </Button>
               <Collapse in={openAdvanced}>
+                <ModelDropdown
+                  editedAgent={editedAgent}
+                  handleChange={handleChange}
+                  models={models}
+                />
+
                 <TextField
-                  label="Roles and Responsibility"
-                  name="system_message"
-                  value={editedAgent?.config?.system_message || ""}
+                  label="Task"
+                  name="task"
+                  value={editedAgent?.config?.retrieve_config?.task || ""}
+                  onChange={handleChange}
+                  fullWidth
+                  margin="normal"
+                  InputProps={{
+                    startAdornment: (
+                      <Task sx={{ color: "gray", marginRight: 1 }} />
+                    )
+                  }}
+                />
+
+                <TextField
+                  label="Human Input Mode"
+                  name="human_input_mode"
+                  value={editedAgent?.config?.human_input_mode || ""}
                   onChange={(e) => {
                     const { name, value } = e.target;
                     setEditedAgent((prevState) => ({
@@ -300,69 +334,44 @@ const AgentList = ({ agents, onRefresh }) => {
                   }}
                   fullWidth
                   margin="normal"
-                  multiline
-                  minRows={3}
                   InputProps={{
                     startAdornment: (
-                      <Assignment sx={{ color: "gray", marginRight: 1 }} />
+                      <InputSharp sx={{ color: "gray", marginRight: 1 }} />
                     )
                   }}
                 />
+
                 <TextField
-                  label="Model"
-                  name="model"
-                  value={editedAgent?.config?.retrieve_config?.model || ""}
+                  label="Retriever Embedding Model"
+                  name="embedding_model"
+                  value={
+                    editedAgent?.config?.retrieve_config?.embedding_model || ""
+                  }
                   onChange={handleChange}
                   fullWidth
                   margin="normal"
                   InputProps={{
                     startAdornment: (
-                      <FileCopy sx={{ color: "gray", marginRight: 1 }} />
+                      <Memory sx={{ color: "gray", marginRight: 1 }} />
                     )
                   }}
                 />
 
-                <Typography
-                  variant="body1"
-                  sx={{ fontWeight: "bold", marginBottom: "10px" }}
-                >
-                  Retriever Task:{" "}
-                  <span style={{ fontWeight: "normal" }}>
-                    {editedAgent?.config?.retrieve_config?.task || "N/A"}
-                  </span>
-                </Typography>
-
-                <Typography
-                  variant="body1"
-                  sx={{ fontWeight: "bold", marginBottom: "10px" }}
-                >
-                  Human Input Mode:{" "}
-                  <span style={{ fontWeight: "normal" }}>
-                    {editedAgent?.config?.human_input_mode || "N/A"}
-                  </span>
-                </Typography>
-
-                <Typography
-                  variant="body1"
-                  sx={{ fontWeight: "bold", marginBottom: "10px" }}
-                >
-                  Retriever Embedding Model:{" "}
-                  <span style={{ fontWeight: "normal" }}>
-                    {editedAgent?.config?.retrieve_config?.embedding_model ||
-                      "N/A"}
-                  </span>
-                </Typography>
-
-                <Typography
-                  variant="body1"
-                  sx={{ fontWeight: "bold", marginBottom: "20px" }}
-                >
-                  Retriever Chunk Token Size:{" "}
-                  <span style={{ fontWeight: "normal" }}>
-                    {editedAgent?.config?.retrieve_config?.chunk_token_size ||
-                      "N/A"}
-                  </span>
-                </Typography>
+                <TextField
+                  label="Retriever Chunk Token Size"
+                  name="chunk_token_size"
+                  value={
+                    editedAgent?.config?.retrieve_config?.chunk_token_size || ""
+                  }
+                  onChange={handleChange}
+                  fullWidth
+                  margin="normal"
+                  InputProps={{
+                    startAdornment: (
+                      <ViewInAr sx={{ color: "gray", marginRight: 1 }} />
+                    )
+                  }}
+                />
               </Collapse>
             </Box>
           </Box>
