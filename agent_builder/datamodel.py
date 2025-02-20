@@ -147,7 +147,7 @@ class RetrieverConfig(SQLModel, table=False):
     chunk_token_size: int = 512
     model: Optional[str] = Field(default="gpt-4o")
     get_or_create: bool
-    customize_prompt: Optional[str] = None
+    customized_prompt: Optional[str] = None
     customize_answer_prefix: Optional[str] = None
 
     @field_validator("docs_path", mode='before')

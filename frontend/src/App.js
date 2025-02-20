@@ -233,8 +233,9 @@ const App = () => {
                   <Divider sx={{ width: "100%" }} />
                   <AccordionDetails>
                     <AgentList
-                      agents={buildingBlocks.agents}
+                      agents={buildingBlocks.agents}                      
                       onRefresh={handleRefreshAgentListAfterEdit}
+                      models={buildingBlocks.models}
                     />
                   </AccordionDetails>
                 </StyledAccordion>
