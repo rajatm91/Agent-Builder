@@ -29,7 +29,7 @@ class Message(SQLModel, table=True):
         default_factory=datetime.now,
         sa_column=Column(DateTime(timezone=True), server_default=func.now())
     )
-    user_id: Optional[str] = "guestuser@gmail.com"
+    user_id: Optional[str] = "guestuser@hdfcbank.com"
     role: str
     content: str
     session_id: Optional[int]

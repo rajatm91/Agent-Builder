@@ -163,13 +163,13 @@ def init_db_samples(dbmanager: Any):
     gpt_4_model = Model(
         model="gpt-4o",
         description="OpenAI GPT-4o model",
-        user_id="guestuser@gmail.com",
+        user_id="guestuser@hdfcbank.com",
         api_type="open_ai",
     )
     # azure_model = Model(
     #     model="gpt4-turbo",
     #     description="Azure OpenAI  model",
-    #     user_id="guestuser@gmail.com",
+    #     user_id="guestuser@hdfcbank.com",
     #     api_type="azure",
     #     base_url="https://api.your azureendpoint.com/v1",
     # )
@@ -177,14 +177,14 @@ def init_db_samples(dbmanager: Any):
         model="llama-3b",
         description="Local Llama model via  Ollama",
         base_url="http://localhost:1234/v1",
-        user_id="guestuser@gmail.com",
+        user_id="guestuser@hdfcbank.com",
         api_type="open_ai",
     )
 
     google_gemini_model = Model(
         model="gemini-1.5-pro-latest",
         description="Google's Gemini model",
-        user_id="guestuser@gmail.com",
+        user_id="guestuser@hdfcbank.com",
         api_type="google",
     )
 
@@ -192,7 +192,7 @@ def init_db_samples(dbmanager: Any):
         name="generate_images",
         description="Generate and save images based on a user's query.",
         content='\nfrom typing import List\nimport uuid\nimport requests  # to perform HTTP requests\nfrom pathlib import Path\n\nfrom openai import OpenAI\n\n\ndef generate_and_save_images(query: str, image_size: str = "1024x1024") -> List[str]:\n    """\n    Function to paint, draw or illustrate images based on the users query or request. Generates images from a given query using OpenAI\'s DALL-E model and saves them to disk.  Use the code below anytime there is a request to create an image.\n\n    :param query: A natural language description of the image to be generated.\n    :param image_size: The size of the image to be generated. (default is "1024x1024")\n    :return: A list of filenames for the saved images.\n    """\n\n    client = OpenAI()  # Initialize the OpenAI client\n    response = client.images.generate(model="dall-e-3", prompt=query, n=1, size=image_size)  # Generate images\n\n    # List to store the file names of saved images\n    saved_files = []\n\n    # Check if the response is successful\n    if response.data:\n        for image_data in response.data:\n            # Generate a random UUID as the file name\n            file_name = str(uuid.uuid4()) + ".png"  # Assuming the image is a PNG\n            file_path = Path(file_name)\n\n            img_url = image_data.url\n            img_response = requests.get(img_url)\n            if img_response.status_code == 200:\n                # Write the binary content to a file\n                with open(file_path, "wb") as img_file:\n                    img_file.write(img_response.content)\n                    print(f"Image saved to {file_path}")\n                    saved_files.append(str(file_path))\n            else:\n                print(f"Failed to download the image from {img_url}")\n    else:\n        print("No image data found in the response!")\n\n    # Return the list of saved files\n    return saved_files\n\n\n# Example usage of the function:\n# generate_and_save_images("A cute baby sea otter")\n',
-        user_id="guestuser@gmail.com",
+        user_id="guestuser@hdfcbank.com",
     )
 
 
@@ -209,7 +209,7 @@ def init_db_samples(dbmanager: Any):
         llm_config=False,
     )
     user_proxy = Agent(
-        user_id="guestuser@gmail.com",
+        user_id="guestuser@hdfcbank.com",
         type=AgentType.userproxy,
         config=user_proxy_config.model_dump(mode="json"),
     )
@@ -225,7 +225,7 @@ def init_db_samples(dbmanager: Any):
     )
 
     default_assistant = Agent(
-        user_id="guestuser@gmail.com",
+        user_id="guestuser@hdfcbank.com",
         type=AgentType.assistant,
         config=default_assistant_config.model_dump(mode="json"),
     )
@@ -234,14 +234,14 @@ def init_db_samples(dbmanager: Any):
     default_workflow = Workflow(
         name="Default Workflow",
         description="Default workflow",
-        user_id="guestuser@gmail.com",
+        user_id="guestuser@hdfcbank.com",
     )
 
     knowledge_hub = KnowledgeHub(
         name="Legal Docs",
         description= "Knowledge hub for the legal chatbot",
         details="/Users/rajatmishra/Development/documents/legal_docs/faqs-poc.pdf",
-        user_id="guestuser@gmail.com",
+        user_id="guestuser@hdfcbank.com",
         type="file",
     )
 

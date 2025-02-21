@@ -3,6 +3,7 @@ import json
 import os
 import queue
 import threading
+import time
 
 import httpx
 from agent_builder.routes import wf_router, sk_router, ss_router, md_router, le_router, ag_router, kh_router
@@ -248,12 +249,12 @@ async def create_retriever_agent(user_input: UserInput):
 @api.get("/building_blocks", tags=["Admin"])
 async def get_building_blocks() -> BuildingBlocks:
 
-    skills =  await client.get("http://localhost:8081/api/skills?user_id=guestuser@gmail.com")
-    models = await client.get("http://localhost:8081/api/models?user_id=guestuser@gmail.com")
+    skills =  await client.get("http://localhost:8081/api/skills?user_id=guestuser@hdfcbank.com")
+    models = await client.get("http://localhost:8081/api/models?user_id=guestuser@hdfcbank.com")
 
-    agents =await client.get("http://localhost:8081/api/agents?user_id=guestuser@gmail.com")
-    workflows = await client.get("http://localhost:8081/api/workflows?user_id=guestuser@gmail.com")
-    knowledge_hub = await client.get("http://localhost:8081/api/knowledgehub?user_id=guestuser@gmail.com")
+    agents =await client.get("http://localhost:8081/api/agents?user_id=guestuser@hdfcbank.com")
+    workflows = await client.get("http://localhost:8081/api/workflows?user_id=guestuser@hdfcbank.com")
+    knowledge_hub = await client.get("http://localhost:8081/api/knowledgehub?user_id=guestuser@hdfcbank.com")
 
     response = BuildingBlocks(skills=skills.json()["data"], models=models.json()["data"],
                               agents=agents.json()["data"], knowledgehub=knowledge_hub.json()["data"] ,
@@ -275,10 +276,12 @@ async def process_socket_message(data: dict, websocket: WebSocket, client_id: st
         managers["user_prompt"] = data['data'].get("content", None)
         cached_response = await get_cached_response(redis, data['data'].get("content", None))
         print(f"#### cache response : {cached_response}")
-        # if cached_response:
-        #    response = cached_response
-        # else:
-        response = await run_session_workflow(
+        if cached_response:
+            time.sleep(5)
+            response = cached_response
+        else:
+            response = await run_session_workflow(
+
         message=user_message, session_id=session_id, workflow_id=workflow_id
         )
         user_prompt = managers.get("user_prompt", None)    

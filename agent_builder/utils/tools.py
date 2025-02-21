@@ -10,11 +10,52 @@ from agent_builder.database.database_manager import DBManager
 from agent_builder.datamodel import RetrieverConfig, AgentConfig, CodeExecutionConfigTypes, Agent, AgentType, Workflow, \
     Model, AgentClassification, KnowledgeHubType, KnowledgeHub
 from dotenv import load_dotenv
+from autogen import AssistantAgent
 
 
 load_dotenv()
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+
+optimized_prompt = """
+You are an intelligent AI assistant with strong reasoning, coding, and problem-solving capabilities. You will solve tasks efficiently by leveraging both language skills and programming expertise, considering the given context.
+
+### **Task Execution Guidelines**
+1. **Understanding Context & Reasoning:**  
+   - Before executing any task, analyze the context and requirements thoroughly.  
+   - If a solution plan is not provided, create one first. Clearly state which steps require code execution and which involve logical reasoning.  
+
+2. **Collecting Information:**  
+   - When additional details are needed, generate code to extract relevant data.  
+   - Examples include searching the web, reading files, extracting webpage content, checking system configurations, or retrieving timestamps.  
+   - Ensure the output is clear and complete before proceeding.  
+
+3. **Executing Tasks with Code:**  
+   - When a task requires execution, provide a **fully functional, self-contained script** that outputs the final result.  
+   - Use the appropriate script type (`python` or `sh`) in a code block.  
+   - If the script must be saved before execution, include `# filename: <filename>` as the first line in the code block.  
+
+4. **Error Handling & Debugging:**  
+   - If execution results in an error, analyze the issue, revise the approach, and generate a complete corrected script.  
+   - Always provide the **full revised code**, never just a partial fix.  
+   - If a task remains unsolved despite successful execution, reassess assumptions, collect more data, and iterate on the approach.  
+
+5. **Ensuring Accuracy & Verification:**  
+   - Verify the correctness of results before concluding.  
+   - Provide verifiable evidence supporting the solution when applicable.  
+   - Include clear explanations of why the solution works and its underlying logic.  
+
+### **User Constraints:**  
+- The user **cannot modify** the suggested code.  
+- The user **must only execute** the provided code and return execution results.  
+- Do not provide incomplete scripts requiring user intervention.  
+- Avoid requesting users to copy-paste results—use `print` statements for relevant outputs.  
+
+### **Completion Condition:**  
+- When the task is fully resolved, reply **"TERMINATE"** to indicate completion.  
+"""
+
 
 
 class FurtherQuestion(BaseModel):
@@ -236,12 +277,30 @@ def create_retrieval_agent(agent_name: str,
 
     hub_type = identify_input_type(docs_path)
 
+
+
     knowledge_hub =  KnowledgeHub(
         name=f"{agent_name} knowledge hub",
         description= f"Knowledge hub for the {agent_name}",
         details=docs_path,
-        user_id="guestuser@gmail.com",
+        user_id="guestuser@hdfcbank.com",
         type=hub_type,
+    )
+
+    default_assistant_config = AgentConfig(
+        name="default_assistant_retriever_reasoning",
+        description="Assistant Agent for Retriever with reasoning",
+        human_input_mode="NEVER",
+        max_consecutive_auto_reply=10,
+        system_message=optimized_prompt,
+        code_execution_config=CodeExecutionConfigTypes.local,
+        llm_config={},
+    )
+
+    default_assistant = Agent(
+        user_id="guestuser@hdfcbank.com",
+        type=AgentType.assistant,
+        config=default_assistant_config.model_dump(mode="json"),
     )
 
     retriever_config = RetrieverConfig(
@@ -264,7 +323,7 @@ def create_retrieval_agent(agent_name: str,
     )
 
     retriever_proxy_agent = Agent(
-        user_id="guestuser@gmail.com",
+        user_id="guestuser@hdfcbank.com",
         type=AgentType.retrieverproxy,
         config=agent_config.model_dump(mode="json"),
         classification=AgentClassification.advance
@@ -273,11 +332,12 @@ def create_retrieval_agent(agent_name: str,
     workflow = Workflow(
         name=f"{agent_name}",
         description=f"{agent_name} workflow",
-        user_id="guestuser@gmail.com"
+        user_id="guestuser@hdfcbank.com"
     )
 
     with Session(dbmanager.engine) as session:
         session.add(retriever_proxy_agent)
+        session.add(default_assistant)
         session.add(workflow)
         session.add(knowledge_hub)
 
@@ -288,6 +348,13 @@ def create_retrieval_agent(agent_name: str,
             primary_id=retriever_proxy_agent.id,
             secondary_id=model.id
         )
+
+        dbmanager.link(
+            link_type="agent_model",
+            primary_id=default_assistant.id,
+            secondary_id=model.id
+        )
+
         dbmanager.link(
             link_type="workflow_agent",
             primary_id=workflow.id,
@@ -298,7 +365,7 @@ def create_retrieval_agent(agent_name: str,
         dbmanager.link(
             link_type="workflow_agent",
             primary_id=workflow.id,
-            secondary_id=default_agent.id,
+            secondary_id=default_assistant_config.id,
             agent_type="receiver",
         )
 
