@@ -58,8 +58,9 @@ def message_handler():
                 logger.info(
                     f"Sending message to connection_id: {message.connection_id}. Connection ID: {socket_client_id}"
                 )
-                if message.content == "UPDATE_CONTEXT" or message.content == "":
-                    message.content = "Sorry !, I could not find the answer in my knowledge hub."
+
+                # if message.data["content"] == "UPDATE_CONTEXT" or message.data["content"] == "":
+                #     message.data["content"] = "Sorry !, I could not find the answer in my knowledge hub."
                 asyncio.run(websocket_manager.send_message(message, connection))
             else:
                 logger.info(
@@ -288,10 +289,9 @@ async def process_socket_message(data: dict, websocket: WebSocket, client_id: st
             user_prompt = managers.get("user_prompt", None)
             if response["status"] and response["data"]["content"]:
                 print(f"Response : {response['data']['content']}")
-                if response["data"]["content"] != "UPDATE CONTEXT" or response["data"]["content"] != "":
+                if response["data"]["content"] != "UPDATE CONTEXT" or response["data"]["content"] != "TERMINATE" or response["data"]["content"] != "":
                     await cache_response(redis, user_prompt, response)
-                else:
-                    response["data"]["content"] = "Sorry! I couldn't find the relevant answer in Knowledge HUB"
+
         response_socket_message = {
             "type": "agent_response",
             "data": response,

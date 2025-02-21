@@ -1,12 +1,14 @@
 import os
 from typing import Dict, Optional, List, Any
-
+import openai
 from datetime import datetime
 
 from agent_builder.manager.agents import ExtendedRetrieverAgent, ExtendedConversableAgent
 from agent_builder.datamodel import Message, Agent, AgentType, SocketMessage
 from agent_builder.utils import clear_folder, sanitize_model, load_code_execution_config, get_skills_from_prompt
 import autogen
+
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 class AgentOrchestrator:
@@ -232,23 +234,25 @@ class AgentOrchestrator:
                 raise ValueError(f"Unknown agent type: {agent.type}")
             return agent
 
+
     def run(self, message: str, clear_history: bool = False) -> None:
 
-        with autogen.Cache.redis() as cache:
-            if isinstance(self.sender, ExtendedRetrieverAgent):
+        #with autogen.Cache.redis() as cache:
+        if isinstance(self.sender, ExtendedRetrieverAgent):
 
-                self.sender.initiate_chat(
-                    self.receiver,
-                    message=self.sender.message_generator,
-                    problem=message,
-                    clear_history=clear_history,
-                    cache=cache
-                )
-            else:
-                self.sender.initiate_chat(
-                    self.receiver,
-                    message=message,
-                    clear_history=clear_history,
-                )
+            self.sender.initiate_chat(
+                self.receiver,
+                message=self.sender.message_generator,
+                problem=message,
+                clear_history=clear_history,
+
+                #cache=cache
+            )
+        else:
+            self.sender.initiate_chat(
+                self.receiver,
+                message=message,
+                clear_history=clear_history,
+            )
 
 
