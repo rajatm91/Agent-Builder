@@ -16,11 +16,11 @@ import {
 } from "@mui/material";
 import {
   Check,
-  IntegrationInstructions,
-  Note,
+  IntegrationInstructions,  
   Psychology
 } from "@mui/icons-material";
-import Markdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { darcula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const SkillsList = ({ skills, refresh }) => {
   const [openModal, setOpenModal] = useState(false);
@@ -111,7 +111,11 @@ const SkillsList = ({ skills, refresh }) => {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ padding: "20px" }}>
-            {selectedSKill && <Markdown>{selectedSKill}</Markdown>}
+            {selectedSKill && (
+              <SyntaxHighlighter language="python" style={darcula}>
+                {selectedSKill}
+              </SyntaxHighlighter>
+            )}            
           </Box>
         </DialogContent>
         <DialogActions sx={{ padding: "16px", backgroundColor: "#f5f5f5" }}>
