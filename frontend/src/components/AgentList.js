@@ -38,13 +38,11 @@ import {
 import ModelDropdown from "./ModelDropDown";
 
 const AgentList = ({ agents, onRefresh, models }) => {
-  console.log("AGENTS", agents);
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [editedAgent, setEditedAgent] = useState(null);
   const [openAdvanced, setOpenAdvanced] = useState(false);
 
-  console.log("models---->", JSON.stringify(models));
   useEffect(() => {
     // console.log("Refreshing Agent list because refresh changed.");
   }, [onRefresh]);
