@@ -287,21 +287,21 @@ def create_retrieval_agent(agent_name: str,
         type=hub_type,
     )
 
-    default_assistant_config = AgentConfig(
-        name="default_assistant_retriever_reasoning",
-        description="Assistant Agent for Retriever with reasoning",
-        human_input_mode="NEVER",
-        max_consecutive_auto_reply=10,
-        system_message=optimized_prompt,
-        code_execution_config=CodeExecutionConfigTypes.local,
-        llm_config={},
-    )
-
-    default_assistant = Agent(
-        user_id="guestuser@hdfcbank.com",
-        type=AgentType.assistant,
-        config=default_assistant_config.model_dump(mode="json"),
-    )
+    # default_assistant_config = AgentConfig(
+    #     name="default_assistant_retriever_reasoning",
+    #     description="Assistant Agent for Retriever with reasoning",
+    #     human_input_mode="NEVER",
+    #     max_consecutive_auto_reply=10,
+    #     system_message=optimized_prompt,
+    #     code_execution_config=CodeExecutionConfigTypes.local,
+    #     llm_config={},
+    # )
+    #
+    # default_assistant = Agent(
+    #     user_id="guestuser@hdfcbank.com",
+    #     type=AgentType.assistant,
+    #     config=default_assistant_config.model_dump(mode="json"),
+    # )
 
     retriever_config = RetrieverConfig(
         task = "qa",
@@ -337,7 +337,7 @@ def create_retrieval_agent(agent_name: str,
 
     with Session(dbmanager.engine) as session:
         session.add(retriever_proxy_agent)
-        session.add(default_assistant)
+       # session.add(default_assistant)
         session.add(workflow)
         session.add(knowledge_hub)
 
@@ -351,7 +351,7 @@ def create_retrieval_agent(agent_name: str,
 
         dbmanager.link(
             link_type="agent_model",
-            primary_id=default_assistant.id,
+            primary_id=default_agent.id,
             secondary_id=model.id
         )
 
@@ -365,7 +365,7 @@ def create_retrieval_agent(agent_name: str,
         dbmanager.link(
             link_type="workflow_agent",
             primary_id=workflow.id,
-            secondary_id=default_assistant_config.id,
+            secondary_id=default_agent.id,
             agent_type="receiver",
         )
 

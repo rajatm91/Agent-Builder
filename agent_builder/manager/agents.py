@@ -54,7 +54,7 @@ class ExtendedRetrieverAgent(RetrieveUserProxyAgent):
 
         config = kwargs
 
-        #config = self.update_docs_path(config)
+        config = self.update_docs_path(config)
 
 
         if config["retrieve_config"]["vector_db"] == "qdrant":
@@ -69,19 +69,19 @@ class ExtendedRetrieverAgent(RetrieveUserProxyAgent):
         self.message_processor = message_processor
 
 
-    # def update_docs_path(self, config):
-    #     docs_path = config["retrieve_config"]["docs_path"]
-    #     if "www" in docs_path:
-    #         with open(os.environ["URL_PATH"], "r") as f:
-    #             urls = [line.strip() for line in f]
-    #         config["retrieve_config"]["docs_path"] = urls
-    #     return config
+    def update_docs_path(self, config):
+        docs_path = config["retrieve_config"]["docs_path"]
+        if "www" in docs_path:
+            with open(os.environ["URL_PATH"], "r") as f:
+                urls = [line.strip() for line in f]
+            config["retrieve_config"]["docs_path"] = urls
+        return config
 
     def check_collection_exist(self,client, config):
         collection_name = config["retrieve_config"]["collection_name"]
         doc_path = config["retrieve_config"]["docs_path"]
         # if "www.hdfcbank.com" in doc_path:
-        #     config["retrieve_config"]["collection_name"] = "EVA_Credit_Cards"
+        #     config["retrieve_config"]["collection_name"] = "EVA_Content"
         #     collection_name = config["retrieve_config"]["collection_name"]
 
         if not client.collection_exists(collection_name):
