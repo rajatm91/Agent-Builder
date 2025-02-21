@@ -47,7 +47,6 @@ const useWebSocket = (url) => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       
       const newMessage =  JSON.stringify(message)
-      console.log('#####1#######', newMessage)
       socketRef.current.send(newMessage);
     } else {
       console.warn("WebSocket is not connected. Message not sent.");

@@ -4,7 +4,10 @@ import { Person, SmartToy } from "@mui/icons-material";
 import Markdown from "react-markdown";
 
 const MessageBubble = ({ message, isUser }) => {
-  const textMessage = message.replace(/\s*TERMINATE$/, "");
+  let textMessage = message.replace(/\s*TERMINATE$/, "");
+  if (textMessage?.length === 0){
+    textMessage = "Sorry! I couldn't find the answer from my knowledge base."
+  }
   return (
     <Box
       sx={{

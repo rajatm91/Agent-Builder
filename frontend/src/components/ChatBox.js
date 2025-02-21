@@ -12,6 +12,8 @@ import MessageBubble from "./MessageBubble";
 import PoweredBy from "./PoweredBy";
 import { Send } from "@mui/icons-material";
 import VoiceToText from "./VoiceToText";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Define a pulsating animation
 const pulsate = keyframes`
@@ -87,6 +89,10 @@ const ChatBox = ({ onCreateAgent, uuid }) => {
             isUser: false
           }
         ]);
+        toast.success('Agent Created Successfully!', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
         onCreateAgent(agentDetails);
       } else {
         setMessages((prev) => [
@@ -258,6 +264,7 @@ const ChatBox = ({ onCreateAgent, uuid }) => {
 
       {/* Powered By Section */}
       <PoweredBy />
+      <ToastContainer />
     </Box>
   );
 };
